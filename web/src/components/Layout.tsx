@@ -4,7 +4,7 @@ import type { Role } from '../api/types';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
 import { useNotifications } from '../state/notifications';
-import { cx, initials } from './ui';
+import { cx, initials, ThemeToggle } from './ui';
 import { Brandmark } from './Brandmark';
 import { RequestBlade } from './RequestBlade';
 import {
@@ -154,6 +154,7 @@ export function Layout() {
           </button>
           <div className="topbar__title">{crumb}</div>
           <div className="topbar__grow" />
+          <ThemeToggle />
           {isStudent && (
             <button
               className="iconbtn"

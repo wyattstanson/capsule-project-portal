@@ -5,6 +5,9 @@ import './styles/app.css';
 import { App } from './App';
 import { AuthProvider } from './state/auth';
 import { ToastProvider } from './state/toast';
+import { applyStoredTheme } from './components/ui';
+
+applyStoredTheme(); // set <html data-theme> from storage before first paint
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

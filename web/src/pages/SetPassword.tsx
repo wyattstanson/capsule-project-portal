@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
+import { ThemeToggle } from '../components/ui';
 
 // Same rule as the API: letters, digits, _ and @ only; 6–24 chars.
 const PW_RE = /^[A-Za-z0-9_@]{6,24}$/;
@@ -33,16 +34,18 @@ export function SetPassword() {
   };
 
   const Req = ({ ok, children }: { ok: boolean; children: React.ReactNode }) => (
-    <div className="row" style={{ gap: 8, color: ok ? 'var(--success)' : 'var(--text-tertiary)' }}>
-      <span style={{ width: 14 }}>{ok ? '✓' : '○'}</span>
-      <span style={{ fontSize: 12.5 }}>{children}</span>
+    <div className={`req${ok ? ' ok' : ''}`}>
+      <span className="rd">{ok ? '✓' : '○'}</span>
+      <span>{children}</span>
     </div>
   );
 
   return (
     <div className="login-wrap">
+      <div style={{ position: 'fixed', top: 20, right: 24, zIndex: 40 }}><ThemeToggle /></div>
       <section className="login-hero">
-        <h1>One-time key used — set your password</h1>
+        <div className="eyebrow">One-time key used</div>
+        <h1 style={{ fontSize: 46 }}>Set your password.</h1>
         <p>
           Welcome, {principal?.name?.split(' ')[0]}. Your 16-character hashkey works only once. Set a
           password now — you’ll use it from here on.
@@ -61,7 +64,7 @@ export function SetPassword() {
               <label htmlFor="np2">Confirm password</label>
               <input id="np2" className="input" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Repeat it" />
             </div>
-            <div className="stack" style={{ gap: 4 }}>
+            <div className="reqs">
               <Req ok={lenOk}>6 to 24 characters</Req>
               <Req ok={charOk}>Only letters, numbers, _ and @</Req>
               <Req ok={matchOk}>Both entries match</Req>

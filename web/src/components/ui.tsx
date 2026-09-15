@@ -4,6 +4,51 @@ export function cx(...parts: (string | false | undefined | null)[]): string {
   return parts.filter(Boolean).join(' ');
 }
 
+// ── Theme (light/dark) ─────────────────────────────────────────────────────
+// Persisted on <html data-theme>; falls back to the OS preference on first run.
+export function applyStoredTheme(): void {
+  try {
+    const t = localStorage.getItem('cap.theme');
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+  } catch {
+    /* storage blocked — leave OS preference in charge */
+  }
+}
+
+export function useTheme(): { theme: 'light' | 'dark'; toggle: () => void } {
+  const read = (): 'light' | 'dark' => {
+    const attr = document.documentElement.getAttribute('data-theme');
+    if (attr === 'dark' || attr === 'light') return attr;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  };
+  const [theme, setTheme] = useState<'light' | 'dark'>(read);
+  const toggle = () => {
+    const next = read() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('cap.theme', next);
+    } catch {
+      /* ignore */
+    }
+    setTheme(next);
+  };
+  return { theme, toggle };
+}
+
+export function ThemeToggle({ className = 'iconbtn' }: { className?: string }) {
+  const { theme, toggle } = useTheme();
+  return (
+    <button
+      className={className}
+      onClick={toggle}
+      title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+      aria-label="Toggle theme"
+    >
+      {theme === 'dark' ? '☀' : '☾'}
+    </button>
+  );
+}
+
 export function initials(name: string): string {
   return name
     .split(/\s+/)

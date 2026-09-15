@@ -1,23 +1,18 @@
-// Post-build: promote the self-contained Capsule/7 portal to the site root.
+// Post-build: keep the standalone Capsule/7 portal available alongside the app.
 //
-// `vite build` emits the React SPA to dist/ (dist/index.html + assets). The new
-// Capsule/7 multi-role portal is a standalone, dependency-free HTML file
-// (web/capsule-portal.html) that isn't part of the Vite graph. Until the design
-// is ported into the React app, we serve the portal at "/" and keep the real
-// React SPA available at "/app.html" for the porting work.
+// The React SPA (now in the Capsule/7 design) is the real product and stays at
+// the site root (dist/index.html). The self-contained, dependency-free portal
+// (web/capsule-portal.html) is a pure front-end demo — we publish it at
+// /demo.html so it's reachable without affecting the live app.
 import { copyFileSync, existsSync } from 'node:fs';
 
-const dist = new URL('../dist/', import.meta.url);
 const portal = new URL('../capsule-portal.html', import.meta.url);
-const indexHtml = new URL('index.html', dist);
-const appHtml = new URL('app.html', dist);
+const demoHtml = new URL('../dist/demo.html', import.meta.url);
 
 if (!existsSync(portal)) {
-  console.error('[postbuild] capsule-portal.html not found — leaving React app at root');
+  console.log('[postbuild] capsule-portal.html not found — skipping demo copy');
   process.exit(0);
 }
 
-// Preserve the React SPA entry, then make the portal the root document.
-copyFileSync(indexHtml, appHtml);
-copyFileSync(portal, indexHtml);
-console.log('[postbuild] root "/" → Capsule/7 portal · React SPA kept at "/app.html"');
+copyFileSync(portal, demoHtml);
+console.log('[postbuild] root "/" → React app (Capsule/7) · standalone demo at "/demo.html"');

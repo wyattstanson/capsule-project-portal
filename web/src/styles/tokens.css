@@ -1,56 +1,92 @@
-/* ═══ Capsule Portal — design tokens (Fluent / Azure) ════════════════════
-   Enterprise depth + focused motion. Native Segoe UI, real SVG icons, a
-   confident single-hue accent — no rainbow, no template tells, not flat-dead. */
+/* ═══ Capsule Portal — design tokens (Capsule/7 brutalist) ═══════════════
+   Electric blue + black + white. Archivo 800 display, Space Mono labels.
+   Rounded cards with hairline borders, black pill buttons, light + dark. */
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
 :root {
   /* Surfaces */
-  --bg: #f3f4f8;             /* cool ground with a hint of blue */
+  --bg: #e3e4e9;             /* off-white ground */
   --surface: #ffffff;
-  --surface-alt: #f5f6fa;    /* hover fill / inputs */
-  --sunken: #eef0f6;         /* tracks, wells */
+  --surface-alt: #f4f5f8;    /* hover fill / inputs */
+  --sunken: #e7e8ee;         /* tracks, wells */
 
-  /* Brand (Azure) */
-  --primary: #0f6cbd;
-  --primary-hover: #115ea3;
-  --primary-pressed: #0c4a78;
-  --primary-deep: #004e8c;
-  --primary-deeper: #0a2540; /* nav rail base */
-  --primary-tint: #eef6fc;
-  --accent: #2899f5;         /* brighter azure for highlights/sparks */
+  /* Brand (electric blue) — keep names the app already references */
+  --primary: #4b5cf0;
+  --primary-hover: #3f4fd8;
+  --primary-pressed: #3444c0;
+  --primary-deep: #3444c0;
+  --primary-deeper: #0b0b0d; /* rail base = ink */
+  --primary-tint: #eceeffe6;
+  --accent: #4b5cf0;
 
   /* Semantic */
-  --success: #0e700e; --success-tint: #e7f5e7;
-  --pending: #00707e; --pending-tint: #e3f4f6;
-  --danger:  #b01c2e; --danger-tint: #fdecef;
+  --success: #1c7c3a; --success-tint: #e6f4ea;
+  --pending: #6c6d75; --pending-tint: #eceef3;
+  --danger:  #c8322a; --danger-tint: #fbe9e8;
   --warning: #8a5a00; --warning-tint: #fdf3e2;
 
   /* Text */
-  --text: #1b1a19; --text-secondary: #4b4a48; --text-tertiary: #8a8886;
-  --text-on-dark: #ffffff; --text-on-dark-dim: #b9d3ea;
+  --text: #0b0b0d; --text-secondary: #6c6d75; --text-tertiary: #9a9ba3;
+  --text-on-dark: #ffffff; --text-on-dark-dim: #b9bbc6;
 
-  /* Lines */
-  --border: #e6e6ea; --border-strong: #d0d0d6; --focus: #0f6cbd;
+  /* Lines — Capsule/7 uses near-black hairlines on cards, soft hairlines between rows */
+  --line: #0b0b0d;              /* strong card border (the brutalist tell) */
+  --border: #e6e6ea;            /* soft divider between rows */
+  --border-strong: #0b0b0d;     /* input / control border */
+  --focus: #4b5cf0;
 
-  /* Radius */
-  --r-sm: 3px; --r-md: 6px; --r-lg: 8px; --r-xl: 12px;
+  /* Ink helpers (Capsule/7 dark surfaces) */
+  --logo-bg: #0b0b0d; --logo-ink: #ffffff;
+  --avatar-bg: #0b0b0d; --avatar-ink: #ffffff;
+  --btn-ink: #0b0b0d; --btn-ink-fg: #ffffff;
 
-  /* Elevation — Fluent-style layered ramp (depth is intentional, not ambient) */
-  --e1: 0 1px 2px rgba(9, 30, 66, 0.09), 0 0 1px rgba(9, 30, 66, 0.10);
-  --e2: 0 2px 6px rgba(9, 30, 66, 0.10), 0 1px 2px rgba(9, 30, 66, 0.08);
-  --e3: 0 8px 22px rgba(9, 30, 66, 0.14), 0 2px 6px rgba(9, 30, 66, 0.08);
-  --e4: 0 18px 44px rgba(9, 30, 66, 0.20), 0 4px 12px rgba(9, 30, 66, 0.10);
+  /* Radius — rounder than Fluent */
+  --r-sm: 6px; --r-md: 9px; --r-lg: 12px; --r-xl: 18px;
+
+  /* Elevation — soft, low; the border does the structural work */
+  --e1: 0 1px 2px rgba(9,10,30,.06);
+  --e2: 0 10px 26px rgba(9,10,30,.10);
+  --e3: 0 20px 50px rgba(9,10,30,.12);
+  --e4: 0 26px 60px rgba(9,10,30,.20);
   --shadow-overlay: var(--e3);
   --shadow-64: var(--e4);
 
-  /* Typography — native Fluent face */
-  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --fs-display: 26px; --fs-title: 20px; --fs-subtitle: 15px; --fs-body: 14px; --fs-caption: 12px;
+  /* Typography — Archivo display + Space Mono labels */
+  --font: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --fs-display: 30px; --fs-title: 22px; --fs-subtitle: 15px; --fs-body: 14px; --fs-caption: 12px;
 
   /* Layout */
-  --rail-w: 248px; --rail-w-collapsed: 48px; --topbar-h: 52px; --breadcrumb-h: 44px;
+  --rail-w: 248px; --rail-w-collapsed: 48px; --topbar-h: 60px; --breadcrumb-h: 44px;
 
   /* Motion */
   --ease: cubic-bezier(0.16, 0.84, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.5, 1);
   --dur: 0.22s;
+
+  color-scheme: light;
+}
+
+/* ── Dark mode: explicit toggle wins; otherwise follow the OS ───────────── */
+:root[data-theme="dark"] {
+  --bg: #050506; --surface: #111114; --surface-alt: #17171b; --sunken: #222228;
+  --primary: #5566ff; --primary-hover: #6472ff; --primary-deep: #7f8bff; --primary-deeper: #f2f2f4;
+  --primary-tint: #1c1c2b; --accent: #5566ff;
+  --success: #4fd07a; --success-tint: #14251a;
+  --pending: #8f9098; --pending-tint: #1c1c21;
+  --danger: #e5675e; --danger-tint: #2a1614;
+  --warning: #e0a44a; --warning-tint: #2a2113;
+  --text: #f2f2f4; --text-secondary: #b3b4bd; --text-tertiary: #8f9098;
+  --line: #2a2a30; --border: #232329; --border-strong: #3a3a44; --focus: #5566ff;
+  --logo-bg: #f2f2f4; --logo-ink: #0b0b0d;
+  --avatar-bg: #26262c; --avatar-ink: #f2f2f4;
+  --btn-ink: #f2f2f4; --btn-ink-fg: #0b0b0d;
+  --e1: 0 1px 2px rgba(0,0,0,.4);
+  --e2: 0 10px 26px rgba(0,0,0,.5);
+  --e3: 0 20px 50px rgba(0,0,0,.55);
+  --e4: 0 26px 60px rgba(0,0,0,.6);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -64,6 +100,7 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition: background 0.3s, color 0.3s;
 }
 
 h1, h2, h3, h4, p { margin: 0; }
@@ -71,6 +108,9 @@ a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button { font-family: inherit; }
 svg { display: block; }
+
+/* Space Mono, uppercase, tracked — the Capsule/7 label voice. */
+.mono { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
 
 :focus-visible {
   outline: 2px solid var(--focus);
