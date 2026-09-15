@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Capsule / CDC — Student</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ground:#e3e4e9; --panel:#ffffff; --inset:#f4f5f8;
+  --ink:#0b0b0d; --ink2:#6c6d75; --line:#0b0b0d; --hair:#e6e6ea;
+  --accent:#4b5cf0; --accent-ink:#ffffff;
+  --muted:#eceef3; --track:#e7e8ee;
+  --ok:#4b5cf0; --pending:#9a9ba3; --overdue:#c8322a;
+  --logo-bg:#0b0b0d; --logo-ink:#ffffff;
+  --avatar-bg:#0b0b0d; --avatar-ink:#ffffff;
+  --btn-ink:#0b0b0d; --btn-ink-fg:#ffffff;
+  --display:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:'Space Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+}
+[data-theme="dark"]{
+  --ground:#050506; --panel:#111114; --inset:#17171b;
+  --ink:#f2f2f4; --ink2:#8f9098; --line:#2a2a30; --hair:#232329;
+  --accent:#5566ff; --accent-ink:#ffffff;
+  --muted:#1c1c21; --track:#222228;
+  --ok:#5566ff; --pending:#6a6b73; --overdue:#e5675e;
+  --logo-bg:#f2f2f4; --logo-ink:#0b0b0d;
+  --avatar-bg:#26262c; --avatar-ink:#f2f2f4;
+  --btn-ink:#f2f2f4; --btn-ink-fg:#0b0b0d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--display);-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+h1,h2,h3,p{margin:0}
+.mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.tag{font-size:9px;color:#0b0b0d;background:#dfe0e6;padding:3px 8px;border-radius:5px;position:absolute;top:24px;left:24px}
+[data-theme="dark"] .tag{background:#22232a;color:#c9cad2}
+
+.wrap{max-width:1240px;margin:0 auto;padding:52px 24px 60px}
+.shell{background:var(--panel);border:1px solid var(--hair);border-radius:26px;padding:22px 26px 30px;box-shadow:0 20px 50px rgba(9,10,30,.10)}
+[data-theme="dark"] .shell{box-shadow:0 20px 60px rgba(0,0,0,.5)}
+
+/* header */
+.head{display:flex;align-items:center;gap:26px;padding:6px 4px 20px;border-bottom:1px solid var(--hair)}
+.logo{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.02em;background:var(--logo-bg);color:var(--logo-ink);padding:11px 16px;border-radius:9px;white-space:nowrap}
+.logo b{color:var(--accent)}
+.nav{display:flex;gap:26px}
+.nav a{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em;font-size:12px;color:var(--ink2);text-decoration:none;font-weight:700}
+.nav a.on{color:var(--accent)}
+.grow{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;padding:9px 14px;border:none;background:transparent;color:var(--ink2);cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--panel)}
+.iconbtn{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center;font-size:15px}
+.me{width:40px;height:40px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:13px}
+
+/* layout */
+.cols{display:grid;grid-template-columns:1.62fr 1fr;gap:26px;padding-top:26px}
+.eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--ink2);font-weight:700}
+.title{font-weight:800;font-size:56px;line-height:.98;letter-spacing:-1.5px;margin-top:14px}
+
+/* countdown */
+.count{background:var(--accent);color:#fff;border-radius:16px;padding:26px 28px;margin-top:24px;display:flex;align-items:center;gap:20px}
+.count .lbl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:12px;opacity:.85}
+.count .big{font-family:var(--mono);font-weight:700;font-size:62px;line-height:1;letter-spacing:2px;margin-top:8px}
+.count .sub{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px;opacity:.9;margin-top:10px}
+.count .fill{flex:1}
+.upload{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:13px;background:#0b0b0d;color:#fff;border:none;border-radius:11px;padding:15px 20px;cursor:pointer}
+[data-theme="dark"] .upload{background:#0b0b0d;color:#fff}
+
+/* progress */
+.status{margin-top:26px}
+.status .cap{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--ink2);font-weight:700;margin-bottom:12px}
+.segs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.segbar{height:9px;border-radius:5px;background:var(--track)}
+.segbar.done{background:var(--ink)}
+.segbar.now{background:var(--accent)}
+.seglabels{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:9px}
+.seglabels span{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;color:var(--ink2);font-weight:700}
+.seglabels .a{color:var(--ink)}.seglabels .b{color:var(--accent)}
+
+/* milestones */
+.box{border:1px solid var(--line);border-radius:14px;margin-top:26px;overflow:hidden}
+.box .bh{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--ink2);font-weight:700;padding:16px 18px;border-bottom:1px solid var(--hair)}
+.mile{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid var(--hair)}
+.mile:last-child{border-bottom:none}
+.mile.on{background:var(--inset)}
+.sq{width:12px;height:12px;border-radius:3px;background:var(--track)}
+.sq.on{background:var(--accent)}
+.mile .nm{flex:1;font-weight:600;font-size:15px}
+.mile .dt{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--ink2);font-weight:700}
+.mile.on .dt{color:var(--accent)}
+
+/* right column */
+.card{border:1px solid var(--line);border-radius:14px;padding:18px}
+.card+.card{margin-top:14px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ch .t{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--ink2);font-weight:700}
+.lockmeter{display:flex;align-items:center;gap:8px}
+.lockmeter .txt{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:700;color:var(--accent)}
+.dots{display:flex;gap:3px}
+.dots i{width:7px;height:7px;border-radius:2px;background:var(--track)}
+.dots i.f{background:var(--accent)}
+
+.mrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--hair)}
+.mrow:first-of-type{border-top:none}
+.av{width:38px;height:38px;border-radius:9px;flex:none;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:13px;background:var(--avatar-bg);color:var(--avatar-ink)}
+.av.lead{background:var(--accent);color:#fff}
+.minfo{flex:1;min-width:0}
+.mname{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+.mrole{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;color:var(--ink2);font-weight:700;margin-top:2px}
+.you{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--ink2);border:1px solid var(--hair);border-radius:5px;padding:2px 6px}
+.chip{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px}
+.chip.placed{background:var(--accent);color:#fff}
+.chip.await{background:var(--muted);color:var(--ink2)}
+.rm{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:700;background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 10px;cursor:pointer}
+.rm:hover{background:var(--overdue);border-color:var(--overdue);color:#fff}
+.locked{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:700;color:var(--ink2)}
+
+.add{width:100%;margin-top:14px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;background:transparent;border:1px dashed var(--line);color:var(--ink);border-radius:10px;padding:11px;cursor:pointer}
+.note{font-size:12.5px;line-height:1.5;color:var(--ink2);margin-top:12px}
+.note b{color:var(--ink)}
+
+.leavecard{border:1px solid var(--accent);border-radius:14px;padding:16px 18px;margin-top:14px;background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.leavecard .lh{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:700;color:var(--accent)}
+.leavecard p{font-size:12.5px;line-height:1.5;color:var(--ink2);margin-top:6px}
+.leavebtn{margin-top:12px;width:100%;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;cursor:pointer}
+
+.link{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:15px 18px;margin-top:14px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;cursor:pointer}
+.link .ar{color:var(--ink2)}
+.cta{width:100%;margin-top:14px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:700;background:var(--btn-ink);color:var(--btn-ink-fg);border:none;border-radius:12px;padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+
+@media(max-width:720px){.cols{grid-template-columns:1fr}.title{font-size:42px}.count .big{font-size:46px}}
+</style>
+</head>
+<body>
+<span class="tag mono">2b · student · cdc</span>
+<div class="wrap">
+  <div class="shell">
+    <!-- HEADER -->
+    <div class="head">
+      <div class="logo">CAPSULE<b>/CDC</b></div>
+      <nav class="nav">
+        <a class="on">Dashboard</a><a>Team</a><a>Reviews</a><a>Placement</a><a>Docs</a>
+      </nav>
+      <div class="grow"></div>
+      <div class="seg"><button class="on">Lead</button><button>Member</button></div>
+      <button class="iconbtn" id="themeBtn" title="Toggle theme">◑</button>
+      <div class="me">AR</div>
+    </div>
+
+    <!-- BODY -->
+    <div class="cols">
+      <!-- LEFT -->
+      <div>
+        <div class="eyebrow">CAP-7042 · AI / EMBEDDED · GUIDE: DR. M. KRISHNAN · CDC TRACK</div>
+        <h1 class="title">Adaptive Traffic<br/>Signal Optimisation</h1>
+
+        <div class="count">
+          <div class="fill">
+            <div class="lbl">Until Review II</div>
+            <div class="big">04:09:37</div>
+            <div class="sub">Days : Hrs : Min · Due 19 Sep, 5:00 PM</div>
+          </div>
+          <button class="upload">↑ Upload</button>
+        </div>
+
+        <div class="status">
+          <div class="cap">Submission status · 60%</div>
+          <div class="segs"><div class="segbar done"></div><div class="segbar done"></div><div class="segbar now"></div><div class="segbar"></div></div>
+          <div class="seglabels"><span class="a">✓ Proposal</span><span class="a">✓ Review I</span><span class="b">▶ Review II</span><span>Final</span></div>
+        </div>
+
+        <div class="box">
+          <div class="bh">Milestones</div>
+          <div class="mile on"><span class="sq on"></span><span class="nm">Review II — demo &amp; interim report</span><span class="dt">19 Sep</span></div>
+          <div class="mile"><span class="sq"></span><span class="nm">Draft paper submission</span><span class="dt">12 Oct</span></div>
+          <div class="mile"><span class="sq"></span><span class="nm">Final review &amp; viva</span><span class="dt">21 Nov</span></div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <!-- TEAM + 7-DAY REMOVAL WINDOW -->
+        <div class="card">
+          <div class="ch">
+            <div class="t">Team · 4</div>
+            <div class="lockmeter">
+              <span class="txt">Locks in 5d</span>
+              <span class="dots"><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
+          </div>
+
+          <div class="mrow">
+            <div class="av lead">AR</div>
+            <div class="minfo"><div class="mname">Aarav Rao <span class="you">You</span></div><div class="mrole">Lead · Integration</div></div>
+          </div>
+          <div class="mrow">
+            <div class="av">IS</div>
+            <div class="minfo"><div class="mname">Isha Sharma</div><div class="mrole">ML Models</div></div>
+            <button class="rm">Remove</button>
+          </div>
+          <div class="mrow">
+            <div class="av">KV</div>
+            <div class="minfo"><div class="mname">Karthik V.</div><div class="mrole">Backend · API</div></div>
+            <button class="rm">Remove</button>
+          </div>
+          <div class="mrow">
+            <div class="av">NP</div>
+            <div class="minfo"><div class="mname">Nisha P. <span class="chip placed">Placed</span></div><div class="mrole">Hardware Rig</div></div>
+            <span class="chip await">Leave · CDC review</span>
+          </div>
+
+          <button class="add">+ Add member</button>
+          <div class="note"><b>Removal window:</b> you can remove members for <b>5 more days</b> (7 days from forming). After that the roster <b>locks</b> — no removals without CDC override.</div>
+        </div>
+
+        <!-- SPECIAL PERMISSION TO LEAVE (PLACEMENT) -->
+        <div class="leavecard">
+          <div class="lh">◆ Placement leave</div>
+          <p>Got placed and need to exit the capsule? Request special permission to leave — the CDC coordinator reviews and, if approved, releases you even after the roster locks.</p>
+          <button class="leavebtn">Request placement leave →</button>
+        </div>
+
+        <div class="link">Github repo <span class="ar">↗</span></div>
+        <div class="link">Report &amp; docs <span class="ar">↗</span></div>
+        <button class="cta">Upload submission <span>↑</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('themeBtn').addEventListener('click',function(){
+    var r=document.documentElement;
+    r.setAttribute('data-theme', r.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+/* ═══ Capsule Portal — design tokens (Fluent / Azure) ════════════════════
+   Enterprise depth + focused motion. Native Segoe UI, real SVG icons, a
+   confident single-hue accent — no rainbow, no template tells, not flat-dead. */
+:root {
+  /* Surfaces */
+  --bg: #f3f4f8;             /* cool ground with a hint of blue */
+  --surface: #ffffff;
+  --surface-alt: #f5f6fa;    /* hover fill / inputs */
+  --sunken: #eef0f6;         /* tracks, wells */
+
+  /* Brand (Azure) */
+  --primary: #0f6cbd;
+  --primary-hover: #115ea3;
+  --primary-pressed: #0c4a78;
+  --primary-deep: #004e8c;
+  --primary-deeper: #0a2540; /* nav rail base */
+  --primary-tint: #eef6fc;
+  --accent: #2899f5;         /* brighter azure for highlights/sparks */
+
+  /* Semantic */
+  --success: #0e700e; --success-tint: #e7f5e7;
+  --pending: #00707e; --pending-tint: #e3f4f6;
+  --danger:  #b01c2e; --danger-tint: #fdecef;
+  --warning: #8a5a00; --warning-tint: #fdf3e2;
+
+  /* Text */
+  --text: #1b1a19; --text-secondary: #4b4a48; --text-tertiary: #8a8886;
+  --text-on-dark: #ffffff; --text-on-dark-dim: #b9d3ea;
+
+  /* Lines */
+  --border: #e6e6ea; --border-strong: #d0d0d6; --focus: #0f6cbd;
+
+  /* Radius */
+  --r-sm: 3px; --r-md: 6px; --r-lg: 8px; --r-xl: 12px;
+
+  /* Elevation — Fluent-style layered ramp (depth is intentional, not ambient) */
+  --e1: 0 1px 2px rgba(9, 30, 66, 0.09), 0 0 1px rgba(9, 30, 66, 0.10);
+  --e2: 0 2px 6px rgba(9, 30, 66, 0.10), 0 1px 2px rgba(9, 30, 66, 0.08);
+  --e3: 0 8px 22px rgba(9, 30, 66, 0.14), 0 2px 6px rgba(9, 30, 66, 0.08);
+  --e4: 0 18px 44px rgba(9, 30, 66, 0.20), 0 4px 12px rgba(9, 30, 66, 0.10);
+  --shadow-overlay: var(--e3);
+  --shadow-64: var(--e4);
+
+  /* Typography — native Fluent face */
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --fs-display: 26px; --fs-title: 20px; --fs-subtitle: 15px; --fs-body: 14px; --fs-caption: 12px;
+
+  /* Layout */
+  --rail-w: 248px; --rail-w-collapsed: 48px; --topbar-h: 52px; --breadcrumb-h: 44px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.16, 0.84, 0.3, 1);
+  --dur: 0.22s;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, p { margin: 0; }
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { font-family: inherit; }
+svg { display: block; }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Entrance + motion utilities (used across pages). */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.animate-in { opacity: 0; animation: fadeUp 0.5s var(--ease) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  .animate-in { opacity: 1; }
+}

@@ -1,0 +1,83 @@
+# ─── Render Blueprint — Capsule Portal full stack ───────────────────────────
+# One-click deploy: push this repo to GitHub, then in Render →
+#   New → Blueprint → pick this repo. Render reads render.yaml and creates
+#   everything below. After the first deploy set the two `sync: false` vars
+#   (they need each other's URLs, known only once the services exist).
+#
+# Free-tier notes:
+#   • web + static + Postgres + Key Value have free plans (web sleeps when idle).
+#   • Background *workers* require a paid instance (Starter). The worker only
+#     does out-of-band notification dispatch + external-portal sync, so you can
+#     DELETE the `capsule-worker` block for a fully-free deploy — core flows
+#     (auth, teams, submissions, approvals, SSE) all work without it.
+
+databases:
+  - name: capsule-db
+    plan: free
+    databaseName: capsule
+    user: capsule
+
+services:
+  # ─── Redis (Render "Key Value") — cache, rate-limit, SSE pub/sub ──────────
+  - type: keyvalue
+    name: capsule-redis
+    plan: free
+    ipAllowList: [] # internal-only
+
+  # ─── API (Fastify) ───────────────────────────────────────────────────────
+  - type: web
+    name: capsule-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install && npm run build
+    preDeployCommand: npm run migrate # apply migrations before each release goes live
+    startCommand: node dist/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase: { name: capsule-db, property: connectionString }
+      - key: DATABASE_DIRECT_URL
+        fromDatabase: { name: capsule-db, property: connectionString }
+      - key: REDIS_URL
+        fromService: { type: keyvalue, name: capsule-redis, property: connectionString }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PG_POOL_MAX
+        value: "10"
+      - key: WEB_ORIGIN
+        sync: false # ← set to the static site URL, e.g. https://capsule-web.onrender.com (CORS)
+
+  # ─── Background worker (notifications + portal sync) — PAID plan required ──
+  # Delete this whole block for a free-only deploy (see notes above).
+  - type: worker
+    name: capsule-worker
+    runtime: node
+    plan: starter
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: node dist/worker.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase: { name: capsule-db, property: connectionString }
+      - key: REDIS_URL
+        fromService: { type: keyvalue, name: capsule-redis, property: connectionString }
+
+  # ─── Frontend (Vite build, served as a static site) ──────────────────────
+  - type: web
+    name: capsule-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # ← set to the API URL, e.g. https://capsule-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /* # SPA fallback so client-side routes resolve
+        destination: /index.html

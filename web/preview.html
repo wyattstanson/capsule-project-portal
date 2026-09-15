@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Capsule Portal — intro</title>
+<style>
+@property --n0 { syntax: '<integer>'; initial-value: 0; inherits: false; }
+@property --n1 { syntax: '<integer>'; initial-value: 0; inherits: false; }
+@property --n2 { syntax: '<integer>'; initial-value: 0; inherits: false; }
+:root{
+  --bg:#f3f4f8;--surface:#fff;--surface-alt:#f5f6fa;--sunken:#eef0f6;
+  --primary:#0f6cbd;--primary-hover:#115ea3;--primary-deep:#004e8c;--primary-deeper:#0a2540;--primary-tint:#eef6fc;
+  --accent:#2899f5;--success:#0e700e;--success-tint:#e7f5e7;--pending:#00707e;
+  --text:#1b1a19;--text2:#4b4a48;--text3:#8a8886;--on-dark-dim:#b9d3ea;
+  --border:#e6e6ea;--border2:#d0d0d6;
+  --r-md:6px;--r-lg:8px;--r-xl:12px;
+  --e1:0 1px 2px rgba(9,30,66,.09),0 0 1px rgba(9,30,66,.10);
+  --e2:0 2px 6px rgba(9,30,66,.10),0 1px 2px rgba(9,30,66,.08);
+  --e3:0 8px 22px rgba(9,30,66,.14),0 2px 6px rgba(9,30,66,.08);
+  --font:'Segoe UI',-apple-system,BlinkMacSystemFont,system-ui,Roboto,Arial,sans-serif;
+  --ease:cubic-bezier(.16,.84,.3,1);--spring:cubic-bezier(.34,1.56,.5,1);
+}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;font-family:var(--font);font-size:14px;color:var(--text);background:var(--primary-deeper);-webkit-font-smoothing:antialiased;overflow:hidden}
+h1,h2,h3,p{margin:0}svg{display:block}button,a{font-family:inherit;cursor:pointer}
+
+/* ═══ INTRO SPLASH ═══════════════════════════════════════════════════════ */
+.intro{position:fixed;inset:0;z-index:100;display:grid;place-items:center;
+  background:radial-gradient(1200px 700px at 50% 38%,#123a63 0%,#0a2540 55%,#06182b 100%);
+  animation:introOut 1s var(--ease) 2.6s forwards}
+.aurora{position:absolute;inset:-20%;background:
+  radial-gradient(420px 300px at 32% 42%,rgba(40,153,245,.35),transparent 60%),
+  radial-gradient(380px 320px at 68% 58%,rgba(15,108,189,.30),transparent 60%),
+  radial-gradient(300px 300px at 55% 30%,rgba(110,231,168,.12),transparent 60%);
+  filter:blur(6px);opacity:0;animation:auroraIn 1.4s var(--ease) .2s forwards, floaty 9s ease-in-out 1.4s infinite}
+.introwrap{position:relative;text-align:center;transform:translateY(6px)}
+.mark{width:112px;height:112px;margin:0 auto;filter:drop-shadow(0 10px 30px rgba(40,153,245,.45));
+  opacity:0;transform:scale(.6);animation:markIn .9s var(--spring) .15s forwards}
+.mark .ring{stroke-dasharray:264;stroke-dashoffset:264;animation:draw 1.15s var(--ease) .5s forwards}
+.mark .cee{opacity:0;transform-origin:center;animation:ceeIn .5s var(--spring) 1.35s forwards}
+.mark .halo{opacity:0;animation:haloPulse 2.4s ease-out 1s forwards}
+.brand{margin-top:26px;color:#fff;font-size:30px;font-weight:700;letter-spacing:.4px;
+  opacity:0;transform:translateY(10px);animation:rise .7s var(--ease) 1.15s forwards}
+.brand b{background:linear-gradient(90deg,#8fd0ff,#fff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{margin-top:10px;color:var(--on-dark-dim);font-size:13.5px;letter-spacing:.3px;
+  opacity:0;transform:translateY(8px);animation:rise .7s var(--ease) 1.35s forwards}
+.rule{margin:26px auto 0;height:2px;width:0;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  animation:ruleGrow 1s var(--ease) 1.55s forwards}
+@keyframes introOut{to{opacity:0;transform:scale(1.06);visibility:hidden}}
+@keyframes auroraIn{to{opacity:1}}
+@keyframes floaty{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-14px,0)}}
+@keyframes markIn{to{opacity:1;transform:scale(1)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes ceeIn{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+@keyframes haloPulse{0%{opacity:0;transform:scale(.7)}40%{opacity:.5}100%{opacity:0;transform:scale(1.5)}}
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes ruleGrow{to{width:210px}}
+
+/* ═══ APP (revealed under the splash) ════════════════════════════════════ */
+.app{opacity:0;animation:appIn .8s var(--ease) 2.7s forwards}
+@keyframes appIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes count0{to{--n0:2412}}@keyframes count1{to{--n1:318}}@keyframes count2{to{--n2:640}}
+.in{opacity:0;animation:fadeUp .55s var(--ease) forwards}
+
+.shell{display:grid;grid-template-columns:248px 1fr;height:100vh;overflow:hidden;background:var(--bg)}
+.rail{background:linear-gradient(180deg,#0d3a63,var(--primary-deeper));color:#fff;display:flex;flex-direction:column;box-shadow:var(--e3);position:relative;z-index:2}
+.brandbtn{display:flex;align-items:center;gap:11px;height:56px;padding:0 16px;font-weight:600;font-size:15px;color:#fff;text-decoration:none;border:none;background:none;transition:background .18s}
+.brandbtn:hover{background:rgba(255,255,255,.06)}
+.brandbtn:hover .logo{transform:rotate(-6deg) scale(1.06)}
+.logo{width:34px;height:34px;flex:none;transition:transform .3s var(--spring);filter:drop-shadow(0 3px 8px rgba(40,153,245,.4))}
+.rail__nav{padding:10px;display:flex;flex-direction:column;gap:3px}
+.rail__sec{font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--on-dark-dim);padding:16px 12px 7px;font-weight:600}
+.rlink{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-md);color:#d6e6f5;font-weight:500;position:relative;transition:background .18s,color .18s,transform .18s;text-decoration:none}
+.rlink:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateX(2px)}
+.rlink.active{background:rgba(255,255,255,.16);color:#fff}
+.rlink.active::before{content:'';position:absolute;left:-10px;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent)}
+.ic{width:18px;height:18px;flex:none;display:grid;place-items:center}
+.spacer{flex:1}.foot{padding:14px 16px;font-size:12px;color:var(--on-dark-dim);border-top:1px solid rgba(255,255,255,.08)}
+.main{display:flex;flex-direction:column;min-width:0;height:100vh}
+.top{height:56px;flex:none;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 22px}
+.crumbs{font-size:13px;color:var(--text2)}.crumbs b{color:var(--text)}
+.grow{flex:1}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--r-md);padding:7px 10px;width:240px;color:var(--text3)}
+.search input{border:none;background:none;outline:none;font:inherit;color:var(--text);width:100%}
+.ib{width:34px;height:34px;border:none;background:transparent;border-radius:var(--r-md);color:var(--text2);display:grid;place-items:center;position:relative;transition:background .16s}
+.ib:hover{background:var(--surface-alt)}
+.dot{position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;background:#b01c2e;border:2px solid #fff}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px;box-shadow:var(--e1)}
+.content{flex:1;overflow-y:auto;padding:22px 26px;background:radial-gradient(1200px 400px at 80% -10%,rgba(40,153,245,.06),transparent)}
+.inner{max-width:1180px;margin:0 auto}
+.head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.head h1{font-size:26px;font-weight:700;letter-spacing:-.4px}.head p{color:var(--text2);margin-top:3px}
+.btn{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 16px;border-radius:var(--r-md);font-size:14px;font-weight:600;border:1px solid transparent;transition:box-shadow .16s,transform .1s}
+.btn:active{transform:translateY(1px)}
+.btn.p{background:linear-gradient(180deg,var(--primary),var(--primary-hover));color:#fff;box-shadow:var(--e1)}.btn.p:hover{box-shadow:var(--e2)}
+.btn.g{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4);color:#fff}.btn.g:hover{background:rgba(255,255,255,.26)}
+.cmd{display:flex;align-items:center;gap:6px;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--e1);margin-bottom:18px}
+.cbtn{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:none;background:transparent;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--text);transition:background .15s}
+.cbtn:hover{background:var(--surface-alt)}.cbtn.pri{color:var(--primary)}.cbtn svg{width:16px;height:16px}
+.sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.grid{display:grid;gap:16px}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1.4fr 1fr}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--e1);transition:box-shadow .2s var(--ease),transform .2s var(--ease)}
+.card:hover{box-shadow:var(--e2);transform:translateY(-2px)}.card.pad{padding:20px}
+.hero{border-radius:var(--r-xl);padding:26px 28px;color:#fff;display:flex;align-items:center;gap:22px;position:relative;overflow:hidden;box-shadow:var(--e3);background:linear-gradient(120deg,#083257,#0f6cbd 62%,#2899f5 130%)}
+.hero::after{content:'';position:absolute;right:-40px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%)}
+.heroic{position:relative;display:grid;place-items:center;width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.heroic svg{width:28px;height:28px}.hb{flex:1;position:relative}
+.ey{font-size:12px;letter-spacing:.7px;text-transform:uppercase;opacity:.85;display:flex;align-items:center;gap:8px}
+.ey .d{width:7px;height:7px;border-radius:50%;background:#6ee7a8;box-shadow:0 0 0 3px rgba(110,231,168,.3)}
+.ht{font-size:24px;font-weight:700;margin-top:4px}.hs{opacity:.92;margin-top:6px}
+.kpi{padding:18px 20px;display:flex;flex-direction:column;gap:2px}
+.kh{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:12.5px;font-weight:600}
+.chip{width:28px;height:28px;border-radius:var(--r-md);display:grid;place-items:center;flex:none}.chip svg{width:15px;height:15px}
+.chip.b{background:var(--primary-tint);color:var(--primary)}.chip.g{background:var(--success-tint);color:var(--success)}.chip.a{background:#fdf3e2;color:#8a5a00}
+.kv{font-size:34px;font-weight:700;letter-spacing:-1px;margin-top:8px;line-height:1;font-variant-numeric:tabular-nums}
+.kv::after{content:counter(x)}.k0{counter-reset:x var(--n0);animation:count0 1.4s var(--ease) 2.9s forwards}
+.k1{counter-reset:x var(--n1);animation:count1 1.4s var(--ease) 3s forwards}.k2{counter-reset:x var(--n2);animation:count2 1.4s var(--ease) 3.1s forwards}
+.ks{color:var(--text3);font-size:12px;margin-top:6px}
+.spark{display:flex;align-items:flex-end;gap:3px;height:26px;margin-top:12px}
+.spark i{flex:1;background:linear-gradient(180deg,var(--accent),var(--primary));border-radius:2px;transform-origin:bottom;animation:grow .8s var(--ease) both}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;line-height:20px}
+.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--primary-tint);color:var(--primary-deep)}.pill.n{background:var(--sunken);color:var(--text2)}
+.mrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--border)}.mrow:first-of-type{border-top:none}
+.ava{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:12.5px;color:#fff}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--text2)}
+.meter{display:flex;flex-direction:column;gap:16px;margin-top:4px}
+.mt{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.bar{height:7px;border-radius:5px;background:var(--sunken);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--primary),var(--accent));transform-origin:left;animation:grow 1s var(--ease) 3.2s both}
+</style>
+</head>
+<body>
+<!-- ═══ INTRO ═══ -->
+<div class="intro">
+  <div class="aurora"></div>
+  <div class="introwrap">
+    <svg class="mark" viewBox="0 0 96 96" fill="none">
+      <defs>
+        <linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fd0ff"/><stop offset="1" stop-color="#0f6cbd"/></linearGradient>
+      </defs>
+      <circle class="halo" cx="48" cy="48" r="30" stroke="#2899f5" stroke-width="1.5"/>
+      <path class="ring" d="M70 30 A26 26 0 1 0 70 66" stroke="url(#mg)" stroke-width="8" stroke-linecap="round"/>
+      <circle class="cee" cx="48" cy="48" r="6" fill="#fff"/>
+    </svg>
+    <div class="brand">Capsule <b>Portal</b></div>
+    <div class="tag">7th-semester capstone · team formation &amp; approval</div>
+    <div class="rule"></div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div class="app">
+  <div class="shell">
+    <nav class="rail">
+      <a class="brandbtn" href="#" title="Go to dashboard">
+        <svg class="logo" viewBox="0 0 40 40" fill="none">
+          <rect x="1" y="1" width="38" height="38" rx="10" fill="url(#lg)"/>
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2899f5"/><stop offset="1" stop-color="#0f6cbd"/></linearGradient></defs>
+          <path d="M28 13 A10 10 0 1 0 28 27" stroke="#fff" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+          <circle cx="20" cy="20" r="2.4" fill="#fff"/>
+        </svg>
+        <span>Capsule Portal</span>
+      </a>
+      <div class="rail__nav">
+        <div class="rail__sec">Workspace</div>
+        <a class="rlink active"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>Dashboard</a>
+        <a class="rlink"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M15 11a3 3 0 1 0-2-5.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M15 14a6 6 0 0 1 6 6"/></svg></span>My Team</a>
+        <a class="rlink"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></span>Browse Students</a>
+        <a class="rlink"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="m7 9 5-5 5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></span>Submissions</a>
+      </div>
+      <div class="spacer"></div>
+      <div class="foot">7th-Sem Capsule Project · 2026</div>
+    </nav>
+    <div class="main">
+      <header class="top">
+        <div class="crumbs">Capsule Portal › <b>Dashboard</b></div><div class="grow"></div>
+        <div class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input placeholder="Search students, teams…"/></div>
+        <button class="ib"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
+        <div class="av">AS</div>
+      </header>
+      <main class="content"><div class="inner">
+        <div class="head in" style="animation-delay:2.85s"><div><h1>Welcome back, Aarav</h1><p>Here’s where your Capsule project stands.</p></div><button class="btn p">Submit for approval</button></div>
+        <div class="cmd in" style="animation-delay:2.9s">
+          <button class="cbtn pri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New team</button>
+          <button class="cbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>Refresh</button>
+          <button class="cbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 8v5l-4 2v-7z"/></svg>Filter</button>
+          <div class="sep"></div>
+          <button class="cbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="m7 9 5-5 5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Export</button>
+        </div>
+        <div class="hero in" style="animation-delay:2.95s">
+          <div class="heroic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="hb"><div class="ey"><span class="d"></span>Team confirmed · In-house route</div><div class="ht">Smart Campus Navigator</div><div class="hs">Two members locked in. Propose your title and submit to the Project Coordinator.</div></div>
+          <div style="display:flex;gap:10px;position:relative"><button class="btn g">View team</button><button class="btn p">Submit project</button></div>
+        </div>
+        <div class="grid g3" style="margin-top:16px">
+          <div class="card kpi in" style="animation-delay:3.02s"><div class="kh"><span class="chip b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13V3"/><path d="m8 7 4-4 4 4"/><path d="M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg></span>Total students</div><div class="kv k0"></div><div class="ks">on the eligible roster</div><div class="spark"><i style="height:40%;animation-delay:3.3s"></i><i style="height:55%;animation-delay:3.35s"></i><i style="height:48%;animation-delay:3.4s"></i><i style="height:70%;animation-delay:3.45s"></i><i style="height:62%;animation-delay:3.5s"></i><i style="height:85%;animation-delay:3.55s"></i><i style="height:100%;animation-delay:3.6s"></i></div></div>
+          <div class="card kpi in" style="animation-delay:3.08s"><div class="kh"><span class="chip g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M9 9v11"/></svg></span>Groups formed</div><div class="kv k1"></div><div class="ks">confirmed · submitted · approved</div><div class="spark"><i style="height:30%;animation-delay:3.35s"></i><i style="height:45%;animation-delay:3.4s"></i><i style="height:60%;animation-delay:3.45s"></i><i style="height:52%;animation-delay:3.5s"></i><i style="height:75%;animation-delay:3.55s"></i><i style="height:88%;animation-delay:3.6s"></i><i style="height:100%;animation-delay:3.65s"></i></div></div>
+          <div class="card kpi in" style="animation-delay:3.14s"><div class="kh"><span class="chip a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M15 4h6M18 1v6"/></svg></span>Not yet participated</div><div class="kv k2"></div><div class="ks">no team membership yet</div><div class="spark"><i style="height:100%;animation-delay:3.4s"></i><i style="height:82%;animation-delay:3.45s"></i><i style="height:70%;animation-delay:3.5s"></i><i style="height:60%;animation-delay:3.55s"></i><i style="height:45%;animation-delay:3.6s"></i><i style="height:38%;animation-delay:3.65s"></i><i style="height:28%;animation-delay:3.7s"></i></div></div>
+        </div>
+        <div class="grid g2" style="margin-top:16px">
+          <div class="card pad in" style="animation-delay:3.2s">
+            <div style="font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px">Your team <span class="pill ok">confirmed</span> <span class="pill n">In-house</span></div>
+            <div style="color:var(--text2);font-size:12.5px;margin:4px 0 14px">Team of 2 · project ID assigned on approval</div>
+            <div class="mrow"><div class="ava" style="background:linear-gradient(135deg,#0f6cbd,#2899f5)">AS</div><div style="flex:1"><div style="font-weight:600">Aarav Sharma <span class="pill" style="background:var(--success-tint);color:var(--success);margin-left:6px">Leader</span></div><div class="mono">22CCE1000 · School of CSE</div></div></div>
+            <div class="mrow"><div class="ava" style="background:linear-gradient(135deg,#6b46c1,#9f7aea)">AD</div><div style="flex:1"><div style="font-weight:600">Aadhya Das</div><div class="mono">22BCB1009 · School of Bio Sciences</div></div></div>
+          </div>
+          <div class="card pad in" style="animation-delay:3.26s">
+            <div style="font-size:15px;font-weight:600">Key deadlines</div>
+            <div style="color:var(--text2);font-size:12.5px;margin:4px 0 8px">Set by the program admin · updates in real time</div>
+            <div class="meter">
+              <div><div class="mt"><span>Team formation window</span><b>27 Aug 2026</b></div><div class="bar"><i style="width:72%"></i></div></div>
+              <div><div class="mt"><span>Final confirmation</span><b>5 Sept 2026</b></div><div class="bar"><i style="width:44%"></i></div></div>
+            </div>
+          </div>
+        </div>
+      </div></main>
+    </div>
+  </div>
+</div>
+</body>
+</html>

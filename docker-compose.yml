@@ -1,0 +1,110 @@
+# Capsule Portal — local production-shaped stack.
+#
+#   postgres   authoritative store (5432)
+#   pgbouncer  transaction-pooling proxy in front of postgres (6432) — this is
+#              what lets thousands of short-lived API connections collapse onto
+#              a small server-side pool instead of exhausting Postgres.
+#   redis      cache + rate-limit counters + pub/sub for SSE fan-out (6379)
+#   api        Fastify HTTP API (stateless — scale `--scale api=N`)
+#   worker     BullMQ consumer for notifications + external-portal sync
+#
+# `docker compose up` brings up everything; `npm run infra:up` brings up only
+# the backing services so you can run the API/worker/web from your host.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: capsule
+      POSTGRES_PASSWORD: capsule
+      POSTGRES_DB: capsule
+    command:
+      # Tuned for many short connections around a deadline spike.
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+    ports:
+      # Host port 55432 to avoid colliding with a native/other Postgres on 5432.
+      - "55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U capsule -d capsule"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: capsule
+      DB_PASSWORD: capsule
+      DB_NAME: capsule
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: "5000"
+      DEFAULT_POOL_SIZE: "40"
+      AUTH_TYPE: scram-sha-256
+    ports:
+      # This image's pgbouncer listens on 5432 INSIDE the container; publish it
+      # on host 56432 to avoid colliding with anything already on the host.
+      - "56432:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      # Host port 56379 to avoid colliding with a native/other Redis on 6379.
+      - "56379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./server
+    environment:
+      NODE_ENV: production
+      API_PORT: "4000"
+      DATABASE_URL: postgres://capsule:capsule@pgbouncer:5432/capsule
+      DATABASE_DIRECT_URL: postgres://capsule:capsule@postgres:5432/capsule
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-only-change-me-in-production
+      WEB_ORIGIN: http://localhost:5173
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Scale statelessly:  docker compose up --scale api=4
+    command: ["node", "dist/index.js"]
+
+  worker:
+    build:
+      context: ./server
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://capsule:capsule@pgbouncer:5432/capsule
+      DATABASE_DIRECT_URL: postgres://capsule:capsule@postgres:5432/capsule
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["node", "dist/worker.js"]
+
+volumes:
+  pgdata:
+  redisdata:

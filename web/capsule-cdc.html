@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Capsule / CDC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ground:#e3e4e9; --panel:#ffffff; --inset:#f4f5f8;
+  --ink:#0b0b0d; --ink2:#6c6d75; --line:#0b0b0d; --hair:#e6e6ea;
+  --accent:#4b5cf0; --muted:#eceef3; --track:#e7e8ee;
+  --pending:#9a9ba3; --overdue:#c8322a; --ok:#1c7c3a;
+  --logo-bg:#0b0b0d; --logo-ink:#ffffff;
+  --avatar-bg:#0b0b0d; --avatar-ink:#ffffff;
+  --btn-ink:#0b0b0d; --btn-ink-fg:#ffffff;
+  --display:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:'Space Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+}
+[data-theme="dark"]{
+  --ground:#050506; --panel:#111114; --inset:#17171b;
+  --ink:#f2f2f4; --ink2:#8f9098; --line:#2a2a30; --hair:#232329;
+  --accent:#5566ff; --muted:#1c1c21; --track:#222228;
+  --pending:#6a6b73; --overdue:#e5675e; --ok:#4fd07a;
+  --logo-bg:#f2f2f4; --logo-ink:#0b0b0d;
+  --avatar-bg:#26262c; --avatar-ink:#f2f2f4;
+  --btn-ink:#f2f2f4; --btn-ink-fg:#0b0b0d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--display);-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+h1,h2,h3,p{margin:0}
+a{color:inherit}
+.mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.wrap{max-width:1300px;margin:0 auto;padding:36px 24px 60px}
+.shell{background:var(--panel);border:1px solid var(--hair);border-radius:26px;padding:20px 26px 30px;box-shadow:0 20px 50px rgba(9,10,30,.10)}
+[data-theme="dark"] .shell{box-shadow:0 20px 60px rgba(0,0,0,.5)}
+
+/* header */
+.head{display:flex;align-items:center;gap:22px;padding:6px 4px 18px;border-bottom:1px solid var(--hair);flex-wrap:wrap}
+.logo{font-family:var(--mono);font-weight:700;font-size:15px;background:var(--logo-bg);color:var(--logo-ink);padding:11px 16px;border-radius:9px;white-space:nowrap;cursor:pointer}
+.logo b{color:var(--accent)}
+.nav{display:flex;gap:22px;flex-wrap:wrap}
+.nav a{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em;font-size:12px;color:var(--ink2);text-decoration:none;font-weight:700;cursor:pointer}
+.nav a.on{color:var(--accent)}
+.grow{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:700;padding:9px 12px;border:none;background:transparent;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--ink);color:var(--panel)}
+.iconbtn{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center;font-size:15px}
+.me{width:40px;height:40px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:13px}
+
+/* layout */
+.cols{display:grid;grid-template-columns:1.62fr 1fr;gap:26px;padding-top:24px}
+.eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--ink2);font-weight:700}
+.title{font-weight:800;font-size:52px;line-height:.98;letter-spacing:-1.4px;margin-top:12px}
+.title.sm{font-size:40px}
+.titlerow{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+
+/* buttons */
+.btn{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.black{background:var(--btn-ink);color:var(--btn-ink-fg);border-color:transparent}
+.btn.blue{background:var(--accent);color:#fff;border-color:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.block{width:100%;justify-content:center}
+
+/* countdown */
+.count{background:var(--accent);color:#fff;border-radius:16px;padding:24px 26px;margin-top:22px;display:flex;align-items:center;gap:20px}
+.count .lbl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:12px;opacity:.85}
+.count .big{font-family:var(--mono);font-weight:700;font-size:58px;line-height:1;letter-spacing:2px;margin-top:8px}
+.count .sub{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px;opacity:.9;margin-top:10px}
+.count .fill{flex:1}
+.count .btn{background:#0b0b0d;color:#fff;border:none}
+
+/* progress segments */
+.status{margin-top:24px}
+.cap{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--ink2);font-weight:700;margin-bottom:12px}
+.segs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.segbar{height:9px;border-radius:5px;background:var(--track)}
+.segbar.done{background:var(--ink)} .segbar.now{background:var(--accent)}
+.seglabels{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:9px}
+.seglabels span{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;color:var(--ink2);font-weight:700}
+.seglabels .a{color:var(--ink)} .seglabels .b{color:var(--accent)}
+
+/* box / milestones */
+.box{border:1px solid var(--line);border-radius:14px;margin-top:24px;overflow:hidden}
+.box .bh{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--ink2);font-weight:700;padding:15px 18px;border-bottom:1px solid var(--hair)}
+.mile{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid var(--hair)}
+.mile:last-child{border-bottom:none}.mile.on{background:var(--inset)}
+.sq{width:12px;height:12px;border-radius:3px;background:var(--track)}.sq.on{background:var(--accent)}
+.mile .nm{flex:1;font-weight:600;font-size:15px}
+.mile .dt{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--ink2);font-weight:700}
+.mile.on .dt{color:var(--accent)}
+
+/* cards */
+.card{border:1px solid var(--line);border-radius:14px;padding:18px}
+.card+.card{margin-top:14px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.ch .t{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--ink2);font-weight:700}
+.lockmeter{display:flex;align-items:center;gap:8px}
+.lockmeter .txt{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:700}
+.lockmeter .txt.open{color:var(--accent)} .lockmeter .txt.locked{color:var(--ink2)}
+.dots{display:flex;gap:3px}.dots i{width:7px;height:7px;border-radius:2px;background:var(--track)}.dots i.f{background:var(--accent)}
+
+.mrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--hair)}
+.mrow:first-of-type{border-top:none}
+.av{width:38px;height:38px;border-radius:9px;flex:none;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:13px;background:var(--avatar-bg);color:var(--avatar-ink)}
+.av.lead{background:var(--accent);color:#fff}
+.minfo{flex:1;min-width:0}
+.mname{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mrole{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;color:var(--ink2);font-weight:700;margin-top:2px}
+.you{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--ink2);border:1px solid var(--hair);border-radius:5px;padding:2px 6px}
+.chip{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;white-space:nowrap}
+.chip.placed{background:var(--accent);color:#fff}
+.chip.await{background:var(--muted);color:var(--ink2)}
+.chip.appr{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.rm{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:700;background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 10px;cursor:pointer}
+.rm:hover{background:var(--overdue);border-color:var(--overdue);color:#fff}
+.locked{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:700;color:var(--ink2)}
+.add{width:100%;margin-top:14px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;background:transparent;border:1px dashed var(--line);color:var(--ink);border-radius:10px;padding:11px;cursor:pointer}
+.note{font-size:12.5px;line-height:1.5;color:var(--ink2);margin-top:12px}
+.note b{color:var(--ink)}
+.note a{color:var(--accent);cursor:pointer;font-weight:700;text-decoration:none}
+
+.leavecard{border:1px solid var(--accent);border-radius:14px;padding:16px 18px;margin-top:14px;background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.leavecard .lh{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:700;color:var(--accent)}
+.leavecard p{font-size:12.5px;line-height:1.5;color:var(--ink2);margin-top:6px}
+.link{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:15px 18px;margin-top:14px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;cursor:pointer}
+.link .ar{color:var(--ink2)}
+.cta{width:100%;margin-top:14px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:700;background:var(--btn-ink);color:var(--btn-ink-fg);border:none;border-radius:12px;padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+
+/* KPI + table (admin) */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+.kpi{border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+.kpi.hot{background:var(--accent);border-color:var(--accent);color:#fff}
+.kl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em;font-size:12px;font-weight:700;color:var(--ink2)}
+.kpi.hot .kl{color:rgba(255,255,255,.82)}
+.kn{font-weight:800;font-size:46px;line-height:1;letter-spacing:-1.4px;margin-top:12px}
+.leavepill{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:8px 14px;white-space:nowrap;background:color-mix(in srgb,var(--accent) 8%,transparent);cursor:pointer}
+
+.toolbar{display:flex;align-items:center;gap:8px;margin-top:20px;flex-wrap:wrap}
+.filter{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:transparent;color:var(--ink2);cursor:pointer}
+.filter.on{background:var(--ink);color:var(--panel);border-color:transparent}
+
+.tbl{border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:16px}
+.tcols{display:grid;grid-template-columns:2.3fr 1.5fr 1.1fr 1.3fr .7fr;gap:16px;align-items:center}
+.thead{padding:14px 22px;border-bottom:1px solid var(--hair)}
+.thead span{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em;font-size:11px;color:var(--ink2);font-weight:700}
+.thead .r{text-align:right}
+.trow{padding:16px 22px;border-bottom:1px solid var(--hair)}
+.trow:last-child{border-bottom:none}.trow:hover{background:var(--inset)}
+.pcell{display:flex;align-items:center;gap:14px}
+.cbx{width:19px;height:19px;flex:none;border:1.5px solid var(--line);border-radius:5px;display:grid;place-items:center;cursor:pointer;color:transparent;font-size:12px;font-weight:900}
+.cbx.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pname{font-weight:700;font-size:15px}
+.pmeta{font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--ink2);font-weight:700;margin-top:2px}
+.pmeta .pl{color:var(--accent)}
+.stat{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:12px;font-weight:700}
+.stat i{width:11px;height:11px;border-radius:3px;flex:none}
+.stat.sub i{background:var(--accent)}.stat.pend i{background:var(--pending)}.stat.over i{background:var(--overdue)}
+.stat.over{color:var(--overdue)}
+.pbar{height:8px;border-radius:5px;background:var(--track);overflow:hidden}.pbar i{display:block;height:100%;border-radius:5px;background:var(--ink)}
+.ppct{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink2);margin-top:7px}
+.viewa{text-align:right}
+.viewa a{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;cursor:pointer}
+
+/* placement queue */
+.qrow{display:flex;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--hair)}
+.qrow:last-child{border-bottom:none}
+.qmeta{flex:1}
+.qname{font-weight:700;font-size:16px}
+.qsub{font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--ink2);font-weight:700;margin-top:3px}
+
+/* browse */
+.bstudent{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--hair)}
+.bstudent:last-child{border-bottom:none}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--btn-ink);color:var(--btn-ink-fg);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:12px;font-weight:700;padding:13px 18px;border-radius:11px;box-shadow:0 12px 30px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+.empty{text-align:center;padding:48px;color:var(--ink2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:12px;font-weight:700}
+
+@media(max-width:860px){.cols{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.title{font-size:38px}
+  .tcols{grid-template-columns:2fr 1fr .8fr}.thead .g,.viewa,.thead .a,.guide{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="shell" id="app"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+/* ── State ──────────────────────────────────────────────────────────── */
+var S = {
+  theme: (function(){ try{return localStorage.getItem('cap.theme')||'light';}catch(e){return 'light';} })(),
+  view: 'lead',            // 'lead' | 'member' | 'admin'
+  route: 'dashboard',
+  daysSinceForming: 2,     // removal window = < 7 days
+  team: {
+    code:'CAP-7042', title:'Adaptive Traffic Signal Optimisation', track:'AI / EMBEDDED',
+    guide:'Dr. M. Krishnan', maxSize:4,
+    members:[
+      {id:'ar',ini:'AR',name:'Aarav Rao',role:'Lead · Integration',lead:true},
+      {id:'is',ini:'IS',name:'Isha Sharma',role:'ML Models'},
+      {id:'kv',ini:'KV',name:'Karthik V.',role:'Backend · API'},
+      {id:'np',ini:'NP',name:'Nisha P.',role:'Hardware Rig',placed:true,company:'Rubrik',leave:'pending'}
+    ]
+  },
+  milestones:[
+    {name:'Review II — demo & interim report',date:'19 Sep',on:true},
+    {name:'Draft paper submission',date:'12 Oct'},
+    {name:'Final review & viva',date:'21 Nov'}
+  ],
+  browse:[
+    {id:'rm',ini:'RM',name:'Rohan Mehta',meta:'22BAI1042 · BAI · CS & Info Systems'},
+    {id:'mp',ini:'MP',name:'Meera Pillai',meta:'22BDS1103 · BDS · CS & Info Systems'},
+    {id:'ka',ini:'KA',name:'Kabir Anand',meta:'22CCE1077 · CCE · CS & Engineering'},
+    {id:'sd',ini:'SD',name:'Sara Dev',meta:'22BCI1188 · BCI · CS & Engineering'}
+  ],
+  leaves:[
+    {team:'CAP-7042',mid:'np',name:'Nisha P.',company:'Rubrik',status:'pending'},
+    {team:'CAP-7156',mid:'x1',name:'Vikram S.',company:'Zscaler',status:'pending'},
+    {team:'CAP-7108',mid:'x2',name:'Ananya K.',company:'Atlassian',status:'pending'}
+  ],
+  adminTeams:[
+    {code:'CAP-7042',title:'Adaptive Traffic Signals',members:4,placed:1,guide:'Dr. M. Krishnan',status:'sub',pct:60,sel:true},
+    {code:'CAP-7108',title:'Federated Health Records',members:3,placed:1,guide:'Dr. S. Iyer',status:'pend',pct:40},
+    {code:'CAP-7156',title:'Drone Crop Survey',members:4,placed:2,guide:'Dr. R. Banerjee',status:'sub',pct:78},
+    {code:'CAP-7203',title:'On-device Speech Denoise',members:2,placed:0,guide:'Dr. P. Nair',status:'over',pct:22},
+    {code:'CAP-7261',title:'Sign-Language Translator',members:3,placed:1,guide:'Dr. L. Menon',status:'sub',pct:71},
+    {code:'CAP-7299',title:'Grid Load Forecasting',members:4,placed:0,guide:'Dr. A. Bose',status:'pend',pct:35}
+  ],
+  filter:'all'
+};
+var STAT={sub:'Submitted',pend:'Pending',over:'Overdue'};
+
+/* ── Helpers ────────────────────────────────────────────────────────── */
+var $=function(s,el){return (el||document).querySelector(s);};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2200);}
+function isAdmin(){return S.view==='admin';}
+function isLead(){return S.view==='lead';}
+function removalOpen(){return S.daysSinceForming<7;}
+function daysLeft(){return Math.max(0,7-S.daysSinceForming);}
+function me(){return isLead()?S.team.members.find(function(m){return m.lead;}):S.team.members.find(function(m){return !m.lead&&!m.placed;})||S.team.members[1];}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+function header(){
+  var studentNav=['dashboard','my team','browse','submissions','placement'];
+  var adminNav=['overview','teams','reviews','placement','exports'];
+  var nav=isAdmin()?adminNav:studentNav;
+  var routeMap={'my team':'team'};
+  var cur=S.route;
+  var links=nav.map(function(n){var r=routeMap[n]||n;return '<a data-go="'+r+'" class="'+(cur===r?'on':'')+'">'+esc(n)+'</a>';}).join('');
+  return '<div class="head">'
+    +'<div class="logo" data-go="'+(isAdmin()?'overview':'dashboard')+'">CAPSULE<b>/CDC</b></div>'
+    +'<nav class="nav">'+links+'</nav><div class="grow"></div>'
+    +'<div class="seg">'
+      +'<button data-view="lead" class="'+(S.view==='lead'?'on':'')+'">Lead</button>'
+      +'<button data-view="member" class="'+(S.view==='member'?'on':'')+'">Member</button>'
+      +'<button data-view="admin" class="'+(S.view==='admin'?'on':'')+'">CDC Admin</button>'
+    +'</div>'
+    +'<button class="iconbtn" data-theme-toggle title="Toggle theme">◑</button>'
+    +'<div class="me">'+esc(isAdmin()?'CD':me().ini)+'</div>'
+  +'</div>';
+}
+
+/* ── Student: team panel (7-day lock + placement leave) ─────────────── */
+function teamPanel(){
+  var t=S.team, open=removalOpen(), lead=isLead(), mid=me().id;
+  var dots='';for(var i=0;i<7;i++){dots+='<i class="'+(i<S.daysSinceForming?'f':'')+'"></i>';}
+  var rows=t.members.map(function(m){
+    var right='';
+    if(m.leave==='approved'){right='<span class="chip appr">Released</span>';}
+    else if(m.placed&&m.leave==='pending'){right='<span class="chip await">Leave · CDC review</span>';}
+    else if(lead&&open&&m.id!==mid&&!m.lead){right='<button class="rm" data-remove="'+m.id+'">Remove</button>';}
+    else if(!open&&!m.lead&&m.id!==mid){right='<span class="locked">🔒 Locked</span>';}
+    var tags=(m.id===mid?'<span class="you">You</span>':'')+(m.placed?' <span class="chip placed">Placed'+(m.company?' · '+esc(m.company):'')+'</span>':'');
+    return '<div class="mrow"><div class="av'+(m.lead?' lead':'')+'">'+esc(m.ini)+'</div>'
+      +'<div class="minfo"><div class="mname">'+esc(m.name)+' '+tags+'</div><div class="mrole">'+esc(m.role)+'</div></div>'+right+'</div>';
+  }).join('');
+  var addBtn=(lead&&open&&t.members.length<t.maxSize)?'<button class="add" data-go="browse">+ Add member</button>':'';
+  var lockTxt=open?'<span class="txt open">Locks in '+daysLeft()+'d</span>':'<span class="txt locked">🔒 Roster locked</span>';
+  var noteBody=open
+    ? '<b>Removal window:</b> the lead can remove members for <b>'+daysLeft()+' more days</b> (7 days from forming). After that the roster <b>locks</b> — no removals without CDC override. '
+    : '<b>Roster locked.</b> The 7-day removal window has closed. Members can only leave via CDC-approved <b>placement leave</b>. ';
+  var sim=open?'<a data-sim="lock">▸ simulate lock</a>':'<a data-sim="open">▸ reopen (demo)</a>';
+  return '<div class="card"><div class="ch"><div class="t">Team · '+t.members.length+'</div>'
+    +'<div class="lockmeter">'+lockTxt+'<span class="dots">'+dots+'</span></div></div>'
+    +rows+addBtn+'<div class="note">'+noteBody+sim+'</div></div>';
+}
+
+function placementLeaveCard(){
+  var mine=S.team.members.find(function(m){return m.id===me().id;});
+  if(mine&&mine.leave==='pending'){
+    return '<div class="leavecard"><div class="lh">◆ Placement leave · pending</div>'
+      +'<p>Your request to leave for <b>'+esc(mine.company||'your placement')+'</b> is with the CDC coordinator. You’ll be released on approval — even after the roster locks.</p></div>';
+  }
+  return '<div class="leavecard"><div class="lh">◆ Placement leave</div>'
+    +'<p>Got placed and need to exit the capsule? Request special permission to leave — the CDC coordinator reviews and, if approved, releases you even after the roster locks.</p>'
+    +'<button class="btn blue block" style="margin-top:12px" data-leave-request>Request placement leave →</button></div>';
+}
+
+/* ── Views ──────────────────────────────────────────────────────────── */
+function vDashboard(){
+  var t=S.team;
+  return '<div class="cols"><div>'
+    +'<div class="eyebrow">'+esc(t.code)+' · '+esc(t.track)+' · GUIDE: '+esc(t.guide).toUpperCase()+' · CDC TRACK</div>'
+    +'<h1 class="title">'+esc(t.title)+'</h1>'
+    +'<div class="count"><div class="fill"><div class="lbl">Until Review II</div><div class="big">04:09:37</div>'
+      +'<div class="sub">Days : Hrs : Min · Due 19 Sep, 5:00 PM</div></div><button class="btn" data-go="submissions">↑ Upload</button></div>'
+    +'<div class="status"><div class="cap">Submission status · 60%</div>'
+      +'<div class="segs"><div class="segbar done"></div><div class="segbar done"></div><div class="segbar now"></div><div class="segbar"></div></div>'
+      +'<div class="seglabels"><span class="a">✓ Proposal</span><span class="a">✓ Review I</span><span class="b">▶ Review II</span><span>Final</span></div></div>'
+    +'<div class="box"><div class="bh">Milestones</div>'+S.milestones.map(function(m){
+        return '<div class="mile'+(m.on?' on':'')+'"><span class="sq'+(m.on?' on':'')+'"></span><span class="nm">'+esc(m.name)+'</span><span class="dt">'+esc(m.date)+'</span></div>';
+      }).join('')+'</div>'
+    +'</div><div>'+teamPanel()+placementLeaveCard()
+      +'<div class="link" data-go="team">Manage team <span class="ar">→</span></div>'
+      +'<button class="cta" data-go="submissions">Upload submission <span>↑</span></button></div></div>';
+}
+
+function vTeam(){
+  var t=S.team;
+  return '<div class="titlerow" style="padding-top:24px"><h1 class="title sm">My team</h1>'
+    +'<span class="mono" style="color:var(--ink2);font-size:12px;font-weight:700">'+esc(t.code)+' · '+t.members.length+' / '+t.maxSize+' members</span></div>'
+    +'<div class="cols" style="padding-top:20px"><div>'+teamPanel()
+      +'<div class="note" style="margin-top:16px">Roles: only the <b>lead</b> can remove or add members, and only during the 7-day window. Switch <b>Lead ⇄ Member</b> (top-right) to see the difference.</div>'
+    +'</div><div>'+placementLeaveCard()
+      +'<div class="link" data-go="browse">Browse students to invite <span class="ar">→</span></div></div></div>';
+}
+
+function vBrowse(){
+  var open=removalOpen()&&isLead()&&S.team.members.length<S.team.maxSize;
+  var rows=S.browse.length? S.browse.map(function(s){
+    return '<div class="bstudent"><div class="av">'+esc(s.ini)+'</div><div class="minfo"><div class="mname">'+esc(s.name)+'</div>'
+      +'<div class="mrole">'+esc(s.meta)+'</div></div>'
+      +(open?'<button class="btn" data-invite="'+s.id+'">Invite</button>':'<span class="locked">'+(isLead()?'🔒 Roster locked':'Lead only')+'</span>')+'</div>';
+  }).join(''):'<div class="empty">No eligible students</div>';
+  return '<h1 class="title sm" style="padding-top:24px">Browse students</h1>'
+    +'<div class="note" style="margin:10px 0 4px">Any un-teamed student, any school or branch. '+(open?'Adding is open for '+daysLeft()+' more days.':'Adding is closed — roster locked or you are not the lead.')+'</div>'
+    +'<div class="box" style="margin-top:16px"><div class="bh">Eligible · '+S.browse.length+'</div>'+rows+'</div>';
+}
+
+function vSubmissions(){
+  return '<h1 class="title sm" style="padding-top:24px">Submissions</h1>'
+    +'<div class="count"><div class="fill"><div class="lbl">Review II · in-house route</div><div class="big" style="font-size:34px">60% complete</div>'
+      +'<div class="sub">Proposal ✓ · Review I ✓ · Review II ▶ · Final —</div></div></div>'
+    +'<div class="box"><div class="bh">Upload · Review II</div>'
+      +'<div class="mile"><span class="sq on"></span><span class="nm">Demo video (MP4)</span><button class="btn" data-toast="Upload dialog (demo)">↑ Upload</button></div>'
+      +'<div class="mile"><span class="sq"></span><span class="nm">Interim report (PDF)</span><button class="btn" data-toast="Upload dialog (demo)">↑ Upload</button></div>'
+    +'</div>'
+    +'<button class="cta" style="max-width:340px" data-toast="Submitted to Project Coordinator">Submit for review <span>↑</span></button>';
+}
+
+function vPlacementStudent(){
+  return '<h1 class="title sm" style="padding-top:24px">Placement leave</h1>'
+    +'<div class="cols" style="padding-top:18px"><div>'+placementLeaveCard()
+      +'<div class="note" style="margin-top:16px">If you’re placed and can’t continue the capsule, request leave here. The <b>CDC coordinator</b> reviews every request — approval releases you from the team even after the roster locks, and your slot is reflected in the admin overview.</div>'
+    +'</div><div>'+teamPanel()+'</div></div>';
+}
+
+/* ── Admin views ────────────────────────────────────────────────────── */
+function kpi(l,n,hot){return '<div class="kpi'+(hot?' hot':'')+'"><div class="kl">'+esc(l)+'</div><div class="kn">'+esc(n)+'</div></div>';}
+function pendingLeaves(){return S.leaves.filter(function(l){return l.status==='pending';}).length;}
+
+function vOverview(){
+  var rows=S.adminTeams.filter(function(t){return S.filter==='all'||t.status===S.filter;}).map(function(t){
+    var placed=t.placed?' · <span class="pl">'+t.placed+' placed</span>':'';
+    return '<div class="tcols trow"><div class="pcell"><div class="cbx'+(t.sel?' on':'')+'" data-sel="'+t.code+'">✓</div>'
+      +'<div><div class="pname">'+esc(t.title)+'</div><div class="pmeta">'+esc(t.code)+' · '+t.members+' members'+placed+'</div></div></div>'
+      +'<div class="guide g">'+esc(t.guide)+'</div>'
+      +'<div class="stat '+t.status+'"><i></i>'+STAT[t.status]+'</div>'
+      +'<div><div class="pbar"><i style="width:'+t.pct+'%"></i></div><div class="ppct">'+t.pct+'%</div></div>'
+      +'<div class="viewa a"><a>View ▸</a></div></div>';
+  }).join('')||'<div class="empty">No teams match this filter</div>';
+  var f=function(k,l){return '<button class="filter'+(S.filter===k?' on':'')+'" data-filter="'+k+'">'+l+'</button>';};
+  var total=S.adminTeams.length, sub=S.adminTeams.filter(function(t){return t.status==='sub';}).length,
+      pend=S.adminTeams.filter(function(t){return t.status==='pend';}).length,
+      avg=Math.round(S.adminTeams.reduce(function(a,t){return a+t.pct;},0)/total);
+  return '<div class="eyebrow" style="margin-top:24px">7th Semester · All Schools · Live</div>'
+    +'<div class="titlerow"><h1 class="title">Capsule overview</h1>'
+      +'<span class="leavepill" data-go="placement">◆ Placement leave · '+pendingLeaves()+' awaiting</span></div>'
+    +'<div class="kpis">'+kpi('Total teams',total)+kpi('Submitted R-II',sub,true)+kpi('Pending review',pend)+kpi('Avg progress',avg+'%')+'</div>'
+    +'<div class="toolbar">'+f('all','All')+f('sub','Submitted')+f('pend','Pending')+f('over','Overdue')
+      +'<div class="grow"></div><button class="btn" data-toast="Filters (demo)">⇄ Filters</button><button class="btn black" data-csv>↓ Download CSV</button></div>'
+    +'<div class="tbl"><div class="tcols thead"><span>Project / Team</span><span class="g">Guide</span><span>Status</span><span>Progress</span><span class="a r">Action</span></div>'+rows+'</div>';
+}
+
+function vAdminPlacement(){
+  var rows=S.leaves.map(function(l,idx){
+    var right = l.status==='pending'
+      ? '<button class="btn blue" data-approve="'+idx+'">Approve</button> <button class="btn" data-reject="'+idx+'">Reject</button>'
+      : '<span class="chip '+(l.status==='approved'?'appr':'await')+'">'+esc(l.status)+'</span>';
+    return '<div class="qrow"><div class="av">'+esc(l.name.split(' ').map(function(x){return x[0];}).join('').slice(0,2))+'</div>'
+      +'<div class="qmeta"><div class="qname">'+esc(l.name)+'</div><div class="qsub">'+esc(l.team)+' · placed @ '+esc(l.company)+'</div></div>'+right+'</div>';
+  }).join('')||'<div class="empty">No placement-leave requests</div>';
+  return '<div class="eyebrow" style="margin-top:24px">CDC · Special permission</div>'
+    +'<h1 class="title">Placement leave</h1>'
+    +'<div class="note" style="margin:10px 0 0;max-width:640px">Students placed off-campus can request to leave their capsule. Approving releases them from the team — <b>even after the 7-day roster lock</b> — and frees the slot in the overview.</div>'
+    +'<div class="box" style="margin-top:20px"><div class="bh">Requests · '+pendingLeaves()+' pending</div>'+rows+'</div>';
+}
+
+function vAdminSimple(title,sub){
+  return '<div class="eyebrow" style="margin-top:24px">CDC</div><h1 class="title">'+esc(title)+'</h1>'
+    +'<div class="empty" style="margin-top:24px;border:1px dashed var(--line);border-radius:16px">'+esc(sub)+'</div>';
+}
+
+/* ── Render + route ─────────────────────────────────────────────────── */
+function bodyHTML(){
+  if(isAdmin()){
+    switch(S.route){
+      case 'placement': return vAdminPlacement();
+      case 'teams': return vOverview();
+      case 'reviews': return vAdminSimple('Reviews','Review scheduling & remarks — wire to /queue');
+      case 'exports': return vAdminSimple('Exports','CSV / webhook sync to the university portal');
+      default: return vOverview();
+    }
+  }
+  switch(S.route){
+    case 'team': return vTeam();
+    case 'browse': return vBrowse();
+    case 'submissions': return vSubmissions();
+    case 'placement': return vPlacementStudent();
+    default: return vDashboard();
+  }
+}
+function render(){
+  document.documentElement.setAttribute('data-theme',S.theme);
+  $('#app').innerHTML=header()+bodyHTML();
+}
+
+/* ── Events ─────────────────────────────────────────────────────────── */
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-go],[data-view],[data-theme-toggle],[data-remove],[data-sim],[data-invite],[data-leave-request],[data-filter],[data-sel],[data-csv],[data-approve],[data-reject],[data-toast]');
+  if(!el)return;
+  var d=el.dataset;
+  if(d.themeToggle!==undefined){S.theme=S.theme==='dark'?'light':'dark';try{localStorage.setItem('cap.theme',S.theme);}catch(x){}return render();}
+  if(d.view){S.view=d.view;S.route=isAdmin()?'overview':'dashboard';return render();}
+  if(d.go){S.route=d.go;return render();}
+  if(d.toast){return toast(d.toast);}
+  if(d.sim){S.daysSinceForming=d.sim==='lock'?7:2;toast(d.sim==='lock'?'Roster locked':'Removal window reopened');return render();}
+  if(d.remove){var m=S.team.members.find(function(x){return x.id===d.remove;});S.team.members=S.team.members.filter(function(x){return x.id!==d.remove;});toast('Removed '+(m?m.name:'member'));return render();}
+  if(d.invite){var s=S.browse.find(function(x){return x.id===d.invite;});if(s){S.team.members.push({id:s.id,ini:s.ini,name:s.name,role:'New member'});S.browse=S.browse.filter(function(x){return x.id!==d.invite;});toast('Added '+s.name);}return render();}
+  if(d.leaveRequest!==undefined){
+    var name=me().name, company=prompt('Placement company (special leave):','');
+    if(company===null)return; company=company.trim()||'placement';
+    var mm=S.team.members.find(function(x){return x.id===me().id;}); if(mm){mm.placed=true;mm.company=company;mm.leave='pending';}
+    S.leaves.unshift({team:S.team.code,mid:me().id,name:name,company:company,status:'pending'});
+    toast('Leave request sent to CDC');return render();
+  }
+  if(d.filter){S.filter=d.filter;return render();}
+  if(d.sel){var tt=S.adminTeams.find(function(x){return x.code===d.sel;});if(tt)tt.sel=!tt.sel;return render();}
+  if(d.csv!==undefined){return downloadCSV();}
+  if(d.approve!==undefined){var lr=S.leaves[+d.approve];lr.status='approved';var tm=S.team.members.find(function(x){return x.id===lr.mid;});if(tm){tm.leave='approved';}toast('Approved — '+lr.name+' released');return render();}
+  if(d.reject!==undefined){var lr2=S.leaves[+d.reject];lr2.status='rejected';var tm2=S.team.members.find(function(x){return x.id===lr2.mid;});if(tm2){tm2.leave=undefined;tm2.placed=false;}toast('Rejected — '+lr2.name+' stays');return render();}
+});
+
+function downloadCSV(){
+  var rows=[['code','title','members','placed','guide','status','progress']];
+  S.adminTeams.filter(function(t){return t.filter==='all'||S.filter==='all'||t.status===S.filter;}).forEach(function(t){
+    rows.push([t.code,t.title,t.members,t.placed,t.guide,STAT[t.status],t.pct+'%']);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  try{
+    var blob=new Blob([csv],{type:'text/csv'});var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='capsule-overview.csv';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);toast('CSV downloaded');
+  }catch(x){toast('CSV ready (download blocked in preview)');}
+}
+
+render();
+</script>
+</body>
+</html>
