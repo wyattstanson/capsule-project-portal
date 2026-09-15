@@ -5,8 +5,8 @@ import type { Principal } from '../api/types';
 interface AuthState {
   principal: Principal | null;
   loading: boolean;
-  requestOtp: (identifier: string) => Promise<{ devCode?: string; email?: string }>;
-  verify: (identifier: string, code: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -27,16 +27,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const requestOtp = async (identifier: string) => {
-    return api<{ devCode?: string; email?: string }>('/auth/request-otp', { body: { identifier } });
-  };
-
-  const verify = async (identifier: string, code: string) => {
-    const r = await api<{ token: string; principal: Principal }>('/auth/verify', {
-      body: { identifier, code },
+  const login = async (identifier: string, password: string) => {
+    const r = await api<{ token: string; principal: Principal }>('/auth/login', {
+      body: { identifier, password },
     });
     setToken(r.token);
     setPrincipal(r.principal);
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await api('/auth/change-password', { body: { currentPassword, newPassword } });
   };
 
   const logout = () => {
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <Ctx.Provider value={{ principal, loading, requestOtp, verify, logout }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ principal, loading, login, changePassword, logout }}>{children}</Ctx.Provider>
   );
 }
 

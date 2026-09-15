@@ -47,6 +47,8 @@ services:
         fromService: { type: keyvalue, name: capsule-redis, property: connectionString }
       - key: JWT_SECRET
         generateValue: true
+      - key: VAULT_KEY
+        sync: false # ← 64 hex chars (32-byte AES key for email encryption). MUST stay stable across deploys, or encrypted emails become unreadable. Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
       - key: PG_POOL_MAX
         value: "10"
       - key: WEB_ORIGIN

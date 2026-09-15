@@ -15,11 +15,7 @@ const notificationWorker = new Worker<NotificationJob>(
   QUEUE_NAMES.notifications,
   async (job) => {
     const { studentId, type, payload } = job.data;
-    if (type === 'otp') {
-      console.log(`[notify] OTP for ${payload.email}: ${payload.code}`);
-      // TODO: integrate email/SMS provider (e.g. SES / Twilio).
-      return;
-    }
+    // TODO: integrate an email/SMS provider (SES / Twilio) for real dispatch.
     console.log(`[notify] → student ${studentId}: ${type}`, payload);
   },
   { connection, concurrency: 20 },

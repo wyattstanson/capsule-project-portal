@@ -4,6 +4,7 @@ import { query, withTransaction } from '../../db/pool.js';
 import { redis } from '../../redis/client.js';
 import { requireAdmin, requireRole } from '../../auth/rbac.js';
 import { badRequest } from '../../lib/errors.js';
+import { encrypt, hashEmail, hashPasswordSync } from '../../lib/vault.js';
 import { parse } from '../../lib/validate.js';
 import {
   DEFAULT_SETTINGS,
@@ -132,14 +133,18 @@ export async function registerAdmin(app: FastifyInstance): Promise<void> {
       for (const r of rows) {
         const regNo = r.reg_no || r.registration_no || r.registration_number;
         if (!regNo || !r.email || !r.name) continue;
+        // Encrypt email, keep an HMAC hash for login lookup, and set the initial
+        // password to the student's name (lowercased) — same as open-project.
+        const initialPw = r.name.toLowerCase().replace(/[^a-z0-9]/g, '');
         const res = await client.query(
-          `INSERT INTO students (reg_no, name, school, branch, email)
-           VALUES ($1, $2, $3, $4, $5)
+          `INSERT INTO students (reg_no, name, school, branch, email_enc, email_hash, password_hash)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (reg_no) DO UPDATE
              SET name = EXCLUDED.name, school = EXCLUDED.school,
-                 branch = EXCLUDED.branch, email = EXCLUDED.email
+                 branch = EXCLUDED.branch, email_enc = EXCLUDED.email_enc,
+                 email_hash = EXCLUDED.email_hash
            RETURNING (xmax = 0) AS inserted`,
-          [regNo, r.name, r.school ?? '', r.branch ?? '', r.email],
+          [regNo, r.name, r.school ?? '', r.branch ?? '', encrypt(r.email), hashEmail(r.email), hashPasswordSync(initialPw)],
         );
         if (res.rows[0].inserted) inserted++;
         else updated++;

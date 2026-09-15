@@ -20,7 +20,12 @@ CREATE TABLE IF NOT EXISTS students (
   name        TEXT NOT NULL,
   school      TEXT NOT NULL,
   branch      TEXT NOT NULL,
-  email       TEXT NOT NULL UNIQUE,
+  -- Email is AES-256-GCM encrypted at rest; email_hash (HMAC) enables O(1)
+  -- login lookup without decrypting. Same scheme as the open-project portal.
+  email_enc   TEXT,
+  email_hash  TEXT NOT NULL UNIQUE,
+  -- scrypt salt:hash (one-way). Initial password = name, lowercased, no spaces.
+  password_hash TEXT,
   -- participation status derived-but-cached for fast dashboard counters:
   -- 'unteamed' (no team), 'teamed' (member of a forming/confirmed team),
   -- 'submitted', 'approved'.
@@ -38,7 +43,10 @@ CREATE INDEX IF NOT EXISTS idx_students_name_lower ON students (lower(name));
 CREATE TABLE IF NOT EXISTS staff (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL,
-  email       TEXT NOT NULL UNIQUE,
+  email_enc   TEXT,
+  email_hash  TEXT NOT NULL UNIQUE,
+  username    TEXT UNIQUE,        -- optional (admin signs in with username + password)
+  password_hash TEXT,             -- scrypt salt:hash
   role        TEXT NOT NULL
               CHECK (role IN ('project_coordinator','cdc_coordinator','admin','proctor')),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()

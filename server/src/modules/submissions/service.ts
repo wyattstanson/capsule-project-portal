@@ -1,6 +1,7 @@
 import { query, withTransaction } from '../../db/pool.js';
 import { badRequest, conflict, forbidden, notFound } from '../../lib/errors.js';
 import { nextProjectId } from '../../lib/id.js';
+import { decrypt } from '../../lib/vault.js';
 import { notifyStudent } from '../../lib/notify.js';
 import { enqueuePortalSync } from '../../queue/index.js';
 import { writeAudit } from '../audit/service.js';
@@ -120,7 +121,7 @@ export async function reviewSubmission(
     const teamId = teamRes.rows[0].id;
 
     const members = await client.query<{ student_id: string; reg_no: string; email: string }>(
-      `SELECT s.id AS student_id, s.reg_no, s.email
+      `SELECT s.id AS student_id, s.reg_no, s.email_enc AS email
          FROM team_members tm JOIN students s ON s.id = tm.student_id
         WHERE tm.team_id = $1`,
       [teamId],
@@ -151,7 +152,7 @@ export async function reviewSubmission(
       enqueuePortalSync({
         teamId,
         projectId,
-        members: members.rows.map((m) => ({ regNo: m.reg_no, email: m.email })),
+        members: members.rows.map((m) => ({ regNo: m.reg_no, email: decrypt(m.email) ?? '' })),
       }).catch(() => {});
       return { status: 'approved', projectId };
     }

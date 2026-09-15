@@ -1,5 +1,6 @@
 import { pool } from './pool.js';
 import { DEFAULT_SETTINGS } from '../lib/settings.js';
+import { encrypt, hashEmail, hashPasswordSync } from '../lib/vault.js';
 
 // How many students to generate (source spec ≈ 2,400). Override with SEED_STUDENTS.
 const STUDENT_COUNT = Number(process.env.SEED_STUDENTS ?? 600);
@@ -46,44 +47,48 @@ async function seed() {
       );
     }
 
-    // ── Staff (coordinators / admin / proctor) ─────────────────────────────
+    // ── Staff (coordinators / admin / proctor) — encrypted email + scrypt pw ─
     const staff = [
-      { name: 'Dr. Project Coordinator', email: 'project.coord@univ.edu', role: 'project_coordinator' },
-      { name: 'Dr. CDC Coordinator', email: 'cdc.coord@univ.edu', role: 'cdc_coordinator' },
-      { name: 'Portal Admin', email: 'admin@univ.edu', role: 'admin' },
-      { name: 'Proctor One', email: 'proctor@univ.edu', role: 'proctor' },
+      { name: 'Dr. Project Coordinator', email: 'project.coord@univ.edu', role: 'project_coordinator', username: null, pw: 'capsule@123' },
+      { name: 'Dr. CDC Coordinator', email: 'cdc.coord@univ.edu', role: 'cdc_coordinator', username: null, pw: 'capsule@123' },
+      { name: 'Portal Admin', email: 'admin@univ.edu', role: 'admin', username: 'admin', pw: 'admin@123' },
+      { name: 'Proctor One', email: 'proctor@univ.edu', role: 'proctor', username: null, pw: 'capsule@123' },
     ];
     for (const s of staff) {
       await client.query(
-        `INSERT INTO staff (name, email, role) VALUES ($1, $2, $3)
-         ON CONFLICT (email) DO NOTHING`,
-        [s.name, s.email, s.role],
+        `INSERT INTO staff (name, email_enc, email_hash, username, password_hash, role)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (email_hash) DO NOTHING`,
+        [s.name, encrypt(s.email), hashEmail(s.email), s.username, hashPasswordSync(s.pw), s.role],
       );
     }
 
     // ── Roster ──────────────────────────────────────────────────────────────
     // Flatten (school, branch) pairs so we can spread students across them.
     const pairs = SCHOOLS.flatMap((s) => s.branches.map((b) => ({ school: s.school, branch: b })));
-    type Row = [string, string, string, string, string]; // reg_no,name,school,branch,email
+    // reg_no, name, school, branch, email_enc, email_hash, password_hash
+    type Row = [string, string, string, string, string, string, string];
     const rows: Row[] = [];
     for (let i = 0; i < STUDENT_COUNT; i++) {
       const pair = pick(pairs, i);
       const name = `${pick(FIRST, i)} ${pick(LAST, Math.floor(i / FIRST.length) + i)}`;
       const regNo = `22${pair.branch}${String(1000 + i)}`;
-      rows.push([regNo, name, pair.school, pair.branch, `${regNo.toLowerCase()}@univ.edu`]);
+      const email = `${regNo.toLowerCase()}@univ.edu`;
+      const initialPw = name.toLowerCase().replace(/[^a-z0-9]/g, ''); // initial password = name
+      rows.push([regNo, name, pair.school, pair.branch, encrypt(email), hashEmail(email), hashPasswordSync(initialPw)]);
     }
     // Chunked multi-row insert to keep the parameter count sane.
-    const CHUNK = 500;
+    const CHUNK = 400;
     for (let start = 0; start < rows.length; start += CHUNK) {
       const chunk = rows.slice(start, start + CHUNK);
       const params: unknown[] = [];
       const tuples = chunk.map((row) => {
-        const base = params.length;
+        const b = params.length;
         params.push(...row);
-        return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5})`;
+        return `($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6}, $${b + 7})`;
       });
       await client.query(
-        `INSERT INTO students (reg_no, name, school, branch, email)
+        `INSERT INTO students (reg_no, name, school, branch, email_enc, email_hash, password_hash)
          VALUES ${tuples.join(', ')}
          ON CONFLICT (reg_no) DO NOTHING`,
         params,
@@ -94,8 +99,9 @@ async function seed() {
     console.log(
       `[seed] settings, ${deadlines.length} deadlines, ${staff.length} staff, ~${STUDENT_COUNT} students`,
     );
-    console.log('[seed] staff logins (OTP): admin@univ.edu, project.coord@univ.edu, cdc.coord@univ.edu, proctor@univ.edu');
-    console.log('[seed] sample student login: reg_no 22CCE1000 or its email');
+    console.log('[seed] Admin login:   username "admin"  ·  password "admin@123"');
+    console.log('[seed] Coordinators:  project.coord@univ.edu / cdc.coord@univ.edu  ·  password "capsule@123"');
+    console.log('[seed] Student login: registration no (e.g. 22CCE1000)  ·  password = full name lowercased, no spaces (e.g. "aaravsharma")');
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

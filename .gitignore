@@ -1,6 +1,10 @@
 node_modules/
 dist/
 .env
+# Vault secret — the AES key that decrypts emails. NEVER commit. On Render it's
+# the VAULT_KEY env var; locally it's auto-created here.
+server/data/.vault_key
+server/data/
 uploads/
 exports/
 *.log
