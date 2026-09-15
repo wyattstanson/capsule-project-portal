@@ -1,15 +1,17 @@
-# ─── Render Blueprint — Capsule Portal full stack ───────────────────────────
-# One-click deploy: push this repo to GitHub, then in Render →
-#   New → Blueprint → pick this repo. Render reads render.yaml and creates
-#   everything below. After the first deploy set the two `sync: false` vars
-#   (they need each other's URLs, known only once the services exist).
+# ─── Render Blueprint — Capsule Portal (free-tier friendly) ─────────────────
+# Deploy: push this repo to GitHub → Render → New → Blueprint → pick the repo.
+# After the FIRST deploy, set the two `sync: false` vars (each needs the other
+# service's URL, known only once they exist), then seed once (see bottom).
 #
-# Free-tier notes:
-#   • web + static + Postgres + Key Value have free plans (web sleeps when idle).
-#   • Background *workers* require a paid instance (Starter). The worker only
-#     does out-of-band notification dispatch + external-portal sync, so you can
-#     DELETE the `capsule-worker` block for a fully-free deploy — core flows
-#     (auth, teams, submissions, approvals, SSE) all work without it.
+# Free-tier constraints handled here:
+#   • No `preDeployCommand` on free plans → migrations run in the start command
+#     instead (idempotent: the runner checks schema_migrations).
+#   • `npm install --include=dev` so tsc/vite (devDeps) exist even though
+#     NODE_ENV=production would otherwise skip them.
+#   • The background worker needs a PAID plan, so it's omitted — it only does
+#     out-of-band notification dispatch + portal sync, and every core flow
+#     (auth, teams, submissions, approvals, SSE) works without it. To add it,
+#     see the commented block at the bottom.
 
 databases:
   - name: capsule-db
@@ -30,9 +32,9 @@ services:
     runtime: node
     plan: free
     rootDir: server
-    buildCommand: npm install && npm run build
-    preDeployCommand: npm run migrate # apply migrations before each release goes live
-    startCommand: node dist/index.js
+    buildCommand: npm install --include=dev && npm run build
+    # Runs migrations (idempotent) then boots the server — no pre-deploy needed.
+    startCommand: npm run start:prod
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -50,29 +52,12 @@ services:
       - key: WEB_ORIGIN
         sync: false # ← set to the static site URL, e.g. https://capsule-web.onrender.com (CORS)
 
-  # ─── Background worker (notifications + portal sync) — PAID plan required ──
-  # Delete this whole block for a free-only deploy (see notes above).
-  - type: worker
-    name: capsule-worker
-    runtime: node
-    plan: starter
-    rootDir: server
-    buildCommand: npm install && npm run build
-    startCommand: node dist/worker.js
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        fromDatabase: { name: capsule-db, property: connectionString }
-      - key: REDIS_URL
-        fromService: { type: keyvalue, name: capsule-redis, property: connectionString }
-
   # ─── Frontend (Vite build, served as a static site) ──────────────────────
   - type: web
     name: capsule-web
     runtime: static
     rootDir: web
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
@@ -81,3 +66,22 @@ services:
       - type: rewrite
         source: /* # SPA fallback so client-side routes resolve
         destination: /index.html
+
+# ─── Seed once, after the first successful deploy ───────────────────────────
+#   Render → capsule-api → Shell:   node dist/db/seed.js
+#
+# ─── Optional worker (needs a PAID plan; add under `services:` if you want it) ─
+#   - type: worker
+#     name: capsule-worker
+#     runtime: node
+#     plan: starter
+#     rootDir: server
+#     buildCommand: npm install --include=dev && npm run build
+#     startCommand: node dist/worker.js
+#     envVars:
+#       - key: NODE_ENV
+#         value: production
+#       - key: DATABASE_URL
+#         fromDatabase: { name: capsule-db, property: connectionString }
+#       - key: REDIS_URL
+#         fromService: { type: keyvalue, name: capsule-redis, property: connectionString }
