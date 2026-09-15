@@ -79,6 +79,9 @@ services:
       DATABASE_DIRECT_URL: postgres://capsule:capsule@postgres:5432/capsule
       REDIS_URL: redis://redis:6379
       JWT_SECRET: dev-only-change-me-in-production
+      # AES-256 email key — read from the gitignored .env (${VAULT_KEY}), never
+      # hardcoded here. In production it's a Render env var (sync:false).
+      VAULT_KEY: ${VAULT_KEY:?set VAULT_KEY in .env}
       WEB_ORIGIN: http://localhost:5173
     ports:
       - "4000:4000"
@@ -98,6 +101,7 @@ services:
       DATABASE_URL: postgres://capsule:capsule@pgbouncer:5432/capsule
       DATABASE_DIRECT_URL: postgres://capsule:capsule@postgres:5432/capsule
       REDIS_URL: redis://redis:6379
+      VAULT_KEY: ${VAULT_KEY:?set VAULT_KEY in .env}
     depends_on:
       postgres:
         condition: service_healthy

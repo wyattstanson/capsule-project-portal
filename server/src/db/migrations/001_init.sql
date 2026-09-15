@@ -27,9 +27,11 @@ CREATE TABLE IF NOT EXISTS students (
   -- scrypt salt:hash of the current credential (one-way).
   password_hash TEXT,
   -- The 16-char login hashkey (AES-encrypted so an admin can re-issue it).
-  -- It's the student's INITIAL credential; once they set a password this is
-  -- just for reset/redistribution.
+  -- It's the student's INITIAL credential and works exactly ONCE: the first
+  -- login forces setting a password, after which key_used = true and the key
+  -- no longer logs in (an admin reset issues a fresh one-time key).
   login_key_enc TEXT,
+  key_used      BOOLEAN NOT NULL DEFAULT false,
   -- participation status derived-but-cached for fast dashboard counters:
   -- 'unteamed' (no team), 'teamed' (member of a forming/confirmed team),
   -- 'submitted', 'approved'.

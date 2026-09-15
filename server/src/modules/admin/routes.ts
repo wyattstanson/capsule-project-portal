@@ -178,7 +178,7 @@ export async function registerAdmin(app: FastifyInstance): Promise<void> {
     const reg = (req.params as { reg: string }).reg;
     const key = genHashkey();
     const upd = await query(
-      `UPDATE students SET login_key_enc = $2, password_hash = $3
+      `UPDATE students SET login_key_enc = $2, password_hash = $3, key_used = false
         WHERE lower(reg_no) = lower($1) RETURNING reg_no, name`,
       [reg, encrypt(key), hashPasswordSync(key)],
     );

@@ -48,11 +48,13 @@ async function seed() {
     }
 
     // ── Staff (coordinators / admin / proctor) — encrypted email + scrypt pw ─
+    // Faculty (coordinators/proctor) initial password = firstname@cap26.
+    // Admin logs in with username "admin" + admin@123.
     const staff = [
-      { name: 'Dr. Project Coordinator', email: 'project.coord@univ.edu', role: 'project_coordinator', username: null, pw: 'capsule@123' },
-      { name: 'Dr. CDC Coordinator', email: 'cdc.coord@univ.edu', role: 'cdc_coordinator', username: null, pw: 'capsule@123' },
+      { name: 'Dr. Meera Krishnan', email: 'meera.krishnan@univ.edu', role: 'project_coordinator', username: null, pw: 'meera@cap26' },
+      { name: 'Dr. Rahul Iyer', email: 'rahul.iyer@univ.edu', role: 'cdc_coordinator', username: null, pw: 'rahul@cap26' },
       { name: 'Portal Admin', email: 'admin@univ.edu', role: 'admin', username: 'admin', pw: 'admin@123' },
-      { name: 'Proctor One', email: 'proctor@univ.edu', role: 'proctor', username: null, pw: 'capsule@123' },
+      { name: 'Dr. Sara Nair', email: 'sara.nair@univ.edu', role: 'proctor', username: null, pw: 'sara@cap26' },
     ];
     for (const s of staff) {
       await client.query(
@@ -104,10 +106,10 @@ async function seed() {
     console.log(
       `[seed] settings, ${deadlines.length} deadlines, ${staff.length} staff, ~${STUDENT_COUNT} students`,
     );
-    console.log('[seed] Admin login:   username "admin"  ·  password "admin@123"');
-    console.log('[seed] Coordinators:  project.coord@univ.edu / cdc.coord@univ.edu  ·  password "capsule@123"');
-    console.log('[seed] Student login: registration no  ·  16-char HASHKEY (then change password). Sample →  ' + sampleKey);
-    console.log('[seed] Admins can view/reset any student key: GET /api/admin/students/:reg/key  ·  POST .../reset-key');
+    console.log('[seed] Admin:    username "admin"  ·  password "admin@123"');
+    console.log('[seed] Faculty:  meera.krishnan@univ.edu (meera@cap26) · rahul.iyer@univ.edu (rahul@cap26) · sara.nair@univ.edu (sara@cap26)');
+    console.log('[seed] Student:  registration no + 16-char HASHKEY (one-time → set a password). Sample →  ' + sampleKey);
+    console.log('[seed] Admin key tools: GET /api/admin/students/:reg/key  ·  POST /api/admin/students/:reg/reset-key');
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

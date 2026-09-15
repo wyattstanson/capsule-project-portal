@@ -7,6 +7,7 @@ import { LoadingScreen } from './components/ui';
 import { Intro } from './components/Intro';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
+import { SetPassword } from './pages/SetPassword';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { BrowseStudents } from './pages/BrowseStudents';
 import { MyTeam } from './pages/MyTeam';
@@ -38,8 +39,11 @@ export function App() {
 }
 
 function AppContent({ principal, loading }: { principal: ReturnType<typeof useAuth>['principal']; loading: boolean }) {
+  const { mustSetPassword } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!principal) return <Login />;
+  // First student login (one-time hashkey consumed) → gate on setting a password.
+  if (mustSetPassword) return <SetPassword />;
 
   const home = HOME[principal.role];
   const isStudent = principal.role === 'student';

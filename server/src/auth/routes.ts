@@ -18,16 +18,23 @@ const loginSchema = z.object({
   identifier: z.string().trim().min(1), // reg no | email | admin username
   password: z.string().min(1),
 });
+// Passwords: letters, digits, _ and @ only; 6–24 chars.
+const PASSWORD_RE = /^[A-Za-z0-9_@]{6,24}$/;
+const passwordField = z
+  .string()
+  .regex(PASSWORD_RE, 'Password must be 6–24 characters: letters, numbers, _ or @ only');
 const changeSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(6),
+  newPassword: passwordField,
 });
+const setSchema = z.object({ newPassword: passwordField });
 
 interface Identity {
   principal: Principal;
   passwordHash: string | null;
   kind: 'student' | 'staff';
   id: string;
+  keyUsed: boolean; // students: has the one-time hashkey been consumed?
 }
 
 async function resolveIdentity(identifier: string): Promise<Identity | null> {
@@ -35,7 +42,7 @@ async function resolveIdentity(identifier: string): Promise<Identity | null> {
   const emailHash = hashEmail(id); // deterministic; harmless if id isn't an email
 
   const student = await query(
-    `SELECT id, name, email_enc, password_hash FROM students
+    `SELECT id, name, email_enc, password_hash, key_used FROM students
       WHERE lower(reg_no) = lower($1) OR email_hash = $2 LIMIT 1`,
     [id, emailHash],
   );
@@ -45,6 +52,7 @@ async function resolveIdentity(identifier: string): Promise<Identity | null> {
       kind: 'student',
       id: s.id,
       passwordHash: s.password_hash,
+      keyUsed: s.key_used,
       principal: { sub: s.id, kind: 'student', role: 'student', email: mask(decrypt(s.email_enc) ?? ''), name: s.name },
     };
   }
@@ -60,6 +68,7 @@ async function resolveIdentity(identifier: string): Promise<Identity | null> {
       kind: 'staff',
       id: s.id,
       passwordHash: s.password_hash,
+      keyUsed: true, // staff have no one-time key
       principal: { sub: s.id, kind: 'staff', role: s.role, email: decrypt(s.email_enc) ?? '', name: s.name },
     };
   }
@@ -78,7 +87,20 @@ export async function registerAuth(app: FastifyInstance): Promise<void> {
       throw unauthorized('Incorrect registration number/email or password');
     }
     const token = signToken(identity.principal);
-    return { token, principal: identity.principal };
+    // First-ever login for a student (one-time hashkey) → force a password set.
+    const mustSetPassword = identity.kind === 'student' && !identity.keyUsed;
+    return { token, principal: identity.principal, mustSetPassword };
+  });
+
+  // First-login: set a password (consumes the one-time hashkey). Authed via the
+  // token issued on that first login.
+  app.post('/auth/set-password', { preHandler: requireAuth }, async (req) => {
+    const { newPassword } = parse(setSchema, req.body);
+    const p = req.principal!;
+    if (p.kind !== 'student') throw forbidden('Only students set a password this way');
+    const next = await hashPassword(newPassword);
+    await query(`UPDATE students SET password_hash = $2, key_used = true WHERE id = $1`, [p.sub, next]);
+    return { ok: true };
   });
 
   app.post('/auth/change-password', { preHandler: requireAuth }, async (req) => {
