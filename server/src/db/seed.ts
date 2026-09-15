@@ -1,6 +1,6 @@
 import { pool } from './pool.js';
 import { DEFAULT_SETTINGS } from '../lib/settings.js';
-import { encrypt, hashEmail, hashPasswordSync } from '../lib/vault.js';
+import { encrypt, hashEmail, hashPasswordSync, genHashkey } from '../lib/vault.js';
 
 // How many students to generate (source spec ≈ 2,400). Override with SEED_STUDENTS.
 const STUDENT_COUNT = Number(process.env.SEED_STUDENTS ?? 600);
@@ -66,16 +66,21 @@ async function seed() {
     // ── Roster ──────────────────────────────────────────────────────────────
     // Flatten (school, branch) pairs so we can spread students across them.
     const pairs = SCHOOLS.flatMap((s) => s.branches.map((b) => ({ school: s.school, branch: b })));
-    // reg_no, name, school, branch, email_enc, email_hash, password_hash
-    type Row = [string, string, string, string, string, string, string];
+    // reg_no, name, school, branch, email_enc, email_hash, password_hash, login_key_enc
+    type Row = [string, string, string, string, string, string, string, string];
     const rows: Row[] = [];
+    let sampleKey = '';
     for (let i = 0; i < STUDENT_COUNT; i++) {
       const pair = pick(pairs, i);
       const name = `${pick(FIRST, i)} ${pick(LAST, Math.floor(i / FIRST.length) + i)}`;
       const regNo = `22${pair.branch}${String(1000 + i)}`;
       const email = `${regNo.toLowerCase()}@univ.edu`;
-      const initialPw = name.toLowerCase().replace(/[^a-z0-9]/g, ''); // initial password = name
-      rows.push([regNo, name, pair.school, pair.branch, encrypt(email), hashEmail(email), hashPasswordSync(initialPw)]);
+      const hashkey = genHashkey(); // 16-char initial login credential
+      if (i === 0) sampleKey = `${regNo} / ${hashkey}`;
+      rows.push([
+        regNo, name, pair.school, pair.branch,
+        encrypt(email), hashEmail(email), hashPasswordSync(hashkey), encrypt(hashkey),
+      ]);
     }
     // Chunked multi-row insert to keep the parameter count sane.
     const CHUNK = 400;
@@ -85,10 +90,10 @@ async function seed() {
       const tuples = chunk.map((row) => {
         const b = params.length;
         params.push(...row);
-        return `($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6}, $${b + 7})`;
+        return `($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6}, $${b + 7}, $${b + 8})`;
       });
       await client.query(
-        `INSERT INTO students (reg_no, name, school, branch, email_enc, email_hash, password_hash)
+        `INSERT INTO students (reg_no, name, school, branch, email_enc, email_hash, password_hash, login_key_enc)
          VALUES ${tuples.join(', ')}
          ON CONFLICT (reg_no) DO NOTHING`,
         params,
@@ -101,7 +106,8 @@ async function seed() {
     );
     console.log('[seed] Admin login:   username "admin"  ·  password "admin@123"');
     console.log('[seed] Coordinators:  project.coord@univ.edu / cdc.coord@univ.edu  ·  password "capsule@123"');
-    console.log('[seed] Student login: registration no (e.g. 22CCE1000)  ·  password = full name lowercased, no spaces (e.g. "aaravsharma")');
+    console.log('[seed] Student login: registration no  ·  16-char HASHKEY (then change password). Sample →  ' + sampleKey);
+    console.log('[seed] Admins can view/reset any student key: GET /api/admin/students/:reg/key  ·  POST .../reset-key');
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { Role } from '../api/types';
 import { useAuth } from '../state/auth';
+import { useToast } from '../state/toast';
 import { useNotifications } from '../state/notifications';
 import { cx, initials } from './ui';
 import { Brandmark } from './Brandmark';
@@ -73,8 +74,22 @@ const CRUMBS: Record<string, string> = {
 };
 
 export function Layout() {
-  const { principal, logout } = useAuth();
+  const { principal, logout, changePassword } = useAuth();
+  const toast = useToast();
   const notif = useNotifications();
+
+  const onChangePassword = async () => {
+    const cur = window.prompt('Current hashkey or password:');
+    if (cur == null) return;
+    const next = window.prompt('New password (at least 6 characters):');
+    if (next == null) return;
+    try {
+      await changePassword(cur, next);
+      toast('Password changed', 'success');
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    }
+  };
   const location = useLocation();
   const navigate = useNavigate();
   const [bladeOpen, setBladeOpen] = useState(false);
@@ -156,6 +171,9 @@ export function Layout() {
               <div className="who__name">{principal?.name}</div>
               <div className="who__role">{roleLabel}</div>
             </div>
+            <button className="btn btn--subtle btn--sm" onClick={onChangePassword} title="Change password">
+              Change password
+            </button>
             <button className="btn btn--subtle btn--sm" onClick={logout} title="Sign out">
               <IconSignOut width={16} height={16} /> Sign out
             </button>

@@ -64,7 +64,7 @@ export function Login() {
               />
             </div>
             <div className="field">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">Hashkey or password</label>
               <input
                 id="password"
                 className="input"
@@ -72,10 +72,11 @@ export function Login() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
+                placeholder="16-char hashkey, or your password"
               />
               <span className="field__hint">
-                First time? Your initial password is your full name, lowercase, no spaces.
+                First time? Sign in with the 16-character hashkey your admin issued, then change it
+                to a password. Admins sign in with username (e.g. <b>admin</b>) + password.
               </span>
             </div>
             <button className="btn btn--primary btn--block" disabled={busy || !identifier.trim() || !password}>

@@ -4,7 +4,7 @@ import { query, withTransaction } from '../../db/pool.js';
 import { redis } from '../../redis/client.js';
 import { requireAdmin, requireRole } from '../../auth/rbac.js';
 import { badRequest } from '../../lib/errors.js';
-import { encrypt, hashEmail, hashPasswordSync } from '../../lib/vault.js';
+import { encrypt, decrypt, hashEmail, hashPasswordSync, genHashkey } from '../../lib/vault.js';
 import { parse } from '../../lib/validate.js';
 import {
   DEFAULT_SETTINGS,
@@ -133,18 +133,18 @@ export async function registerAdmin(app: FastifyInstance): Promise<void> {
       for (const r of rows) {
         const regNo = r.reg_no || r.registration_no || r.registration_number;
         if (!regNo || !r.email || !r.name) continue;
-        // Encrypt email, keep an HMAC hash for login lookup, and set the initial
-        // password to the student's name (lowercased) — same as open-project.
-        const initialPw = r.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        // Encrypt email, keep an HMAC hash for login lookup, and issue a 16-char
+        // login hashkey as the initial credential (kept for re-imports).
+        const hashkey = genHashkey();
         const res = await client.query(
-          `INSERT INTO students (reg_no, name, school, branch, email_enc, email_hash, password_hash)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
+          `INSERT INTO students (reg_no, name, school, branch, email_enc, email_hash, password_hash, login_key_enc)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
            ON CONFLICT (reg_no) DO UPDATE
              SET name = EXCLUDED.name, school = EXCLUDED.school,
                  branch = EXCLUDED.branch, email_enc = EXCLUDED.email_enc,
                  email_hash = EXCLUDED.email_hash
            RETURNING (xmax = 0) AS inserted`,
-          [regNo, r.name, r.school ?? '', r.branch ?? '', encrypt(r.email), hashEmail(r.email), hashPasswordSync(initialPw)],
+          [regNo, r.name, r.school ?? '', r.branch ?? '', encrypt(r.email), hashEmail(r.email), hashPasswordSync(hashkey), encrypt(hashkey)],
         );
         if (res.rows[0].inserted) inserted++;
         else updated++;
@@ -159,6 +159,38 @@ export async function registerAdmin(app: FastifyInstance): Promise<void> {
       detail: { inserted, updated, rows: rows.length },
     });
     return { ok: true, inserted, updated, parsed: rows.length };
+  });
+
+  // ── Student login hashkeys (view / reset) ──────────────────────────────
+  // View a student's 16-char login hashkey so it can be handed out.
+  app.get('/admin/students/:reg/key', { preHandler: requireAdmin }, async (req) => {
+    const reg = (req.params as { reg: string }).reg;
+    const r = await query(
+      `SELECT reg_no, name, login_key_enc FROM students WHERE lower(reg_no) = lower($1)`,
+      [reg],
+    );
+    if (!r.rowCount) throw badRequest('not_found', 'Student not found');
+    return { reg: r.rows[0].reg_no, name: r.rows[0].name, hashkey: decrypt(r.rows[0].login_key_enc) };
+  });
+
+  // Reset: issue a fresh hashkey (becomes the new credential) — for lockouts.
+  app.post('/admin/students/:reg/reset-key', { preHandler: requireAdmin }, async (req) => {
+    const reg = (req.params as { reg: string }).reg;
+    const key = genHashkey();
+    const upd = await query(
+      `UPDATE students SET login_key_enc = $2, password_hash = $3
+        WHERE lower(reg_no) = lower($1) RETURNING reg_no, name`,
+      [reg, encrypt(key), hashPasswordSync(key)],
+    );
+    if (!upd.rowCount) throw badRequest('not_found', 'Student not found');
+    await writeAudit({
+      actorId: req.principal!.sub,
+      actorKind: 'staff',
+      action: 'student.reset_key',
+      targetType: 'student',
+      targetId: upd.rows[0].reg_no,
+    });
+    return { reg: upd.rows[0].reg_no, name: upd.rows[0].name, hashkey: key };
   });
 
   // ── Team / request browser + override ──────────────────────────────────

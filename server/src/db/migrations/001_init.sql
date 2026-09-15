@@ -24,8 +24,12 @@ CREATE TABLE IF NOT EXISTS students (
   -- login lookup without decrypting. Same scheme as the open-project portal.
   email_enc   TEXT,
   email_hash  TEXT NOT NULL UNIQUE,
-  -- scrypt salt:hash (one-way). Initial password = name, lowercased, no spaces.
+  -- scrypt salt:hash of the current credential (one-way).
   password_hash TEXT,
+  -- The 16-char login hashkey (AES-encrypted so an admin can re-issue it).
+  -- It's the student's INITIAL credential; once they set a password this is
+  -- just for reset/redistribution.
+  login_key_enc TEXT,
   -- participation status derived-but-cached for fast dashboard counters:
   -- 'unteamed' (no team), 'teamed' (member of a forming/confirmed team),
   -- 'submitted', 'approved'.

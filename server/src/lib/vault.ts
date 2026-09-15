@@ -137,3 +137,13 @@ export function hashPasswordSync(pw: string): string {
 export function newToken(): string {
   return crypto.randomBytes(24).toString('hex');
 }
+
+// A 16-character login hashkey issued to each student as their initial
+// credential (they change to a real password later). Crockford-ish alphabet
+// avoids ambiguous 0/O/1/I/L. Uppercase, easy to read off a sheet.
+const KEY_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+export function genHashkey(len = 16): string {
+  let out = '';
+  for (let i = 0; i < len; i++) out += KEY_ALPHABET[crypto.randomInt(KEY_ALPHABET.length)];
+  return out;
+}
