@@ -1,6 +1,6 @@
 import { pool } from './pool.js';
 import { DEFAULT_SETTINGS } from '../lib/settings.js';
-import { encrypt, hashEmail, hashPasswordSync, genHashkey } from '../lib/vault.js';
+import { encrypt, hashEmail, hashPasswordSync, genHashkey, initVault } from '../lib/vault.js';
 
 // How many students to generate (source spec ≈ 2,400). Override with SEED_STUDENTS.
 const STUDENT_COUNT = Number(process.env.SEED_STUDENTS ?? 600);
@@ -21,6 +21,7 @@ function pick<T>(arr: T[], i: number): T {
 }
 
 async function seed() {
+  await initVault(); // ensure the encryption key is loaded before encrypt()
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

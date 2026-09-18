@@ -30,23 +30,22 @@ function parseKey(hex: string, source: string): Buffer {
 
 // The AES/HMAC key MUST be stable for the life of the data — if it changes,
 // every encrypted email and email_hash becomes unreadable and login lookups
-// break. In production we therefore REQUIRE an explicit VAULT_KEY env var and
-// refuse to boot without it, rather than silently generating a fresh (and, on
-// an ephemeral filesystem like Render's, per-restart) key that would corrupt
-// access to existing data. In development we fall back to a persisted file.
-function loadKey(): Buffer {
-  if (process.env.VAULT_KEY) return parseKey(process.env.VAULT_KEY, 'env');
+// break. Resolution order (see initVault):
+//   1. VAULT_KEY env var (authoritative; use this for real secret management)
+//   2. a key persisted in the app_secrets DB table (durable across restarts,
+//      even on hosts with an ephemeral filesystem like Render) — generated and
+//      stored once on first boot if absent
+//   3. (development only) a local data/.vault_key file
+// This means the API boots with zero configuration and never silently rotates
+// the key. `KEY` is populated by initVault() before the server serves traffic.
+let KEY: Buffer | null = null;
 
-  if (IS_PROD) {
-    throw new Error(
-      'VAULT_KEY environment variable is required in production and must stay ' +
-        'STABLE across deploys (it decrypts stored emails). Generate once with:\n' +
-        '  node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"\n' +
-        'then set it on the API service (e.g. Render → capsule-api → Environment).',
-    );
-  }
+function currentKey(): Buffer {
+  if (!KEY) throw new Error('Vault key not initialised — call initVault() at startup before encrypt/decrypt.');
+  return KEY;
+}
 
-  // Development only: read a persisted key, or generate and persist one.
+function loadKeyFromFileDev(): Buffer {
   try {
     return parseKey(fs.readFileSync(KEY_FILE, 'utf8'), KEY_FILE);
   } catch {
@@ -57,7 +56,56 @@ function loadKey(): Buffer {
   fs.writeFileSync(KEY_FILE, k.toString('hex'), { mode: 0o600 });
   return k;
 }
-let KEY = loadKey();
+
+/**
+ * Load (or, on first ever boot, generate and persist) the vault key. Idempotent
+ * and safe to call from every entry point (server, seed, export). MUST be
+ * awaited before any encrypt/decrypt/hashEmail call.
+ */
+export async function initVault(): Promise<void> {
+  if (KEY) return;
+
+  if (process.env.VAULT_KEY) {
+    KEY = parseKey(process.env.VAULT_KEY, 'env');
+    return;
+  }
+
+  // Durable key persisted in the database. Imported lazily so this module has
+  // no import-time dependency on a live DB connection.
+  try {
+    const { query } = await import('../db/pool.js');
+    const found = await query<{ value: string }>(
+      `SELECT value FROM app_secrets WHERE key = 'vault_key'`,
+    );
+    if (found.rowCount && found.rows[0]?.value) {
+      KEY = parseKey(found.rows[0].value, 'app_secrets');
+      return;
+    }
+    // Generate once and store. ON CONFLICT makes concurrent boots race-safe:
+    // whoever inserts first wins, then everyone re-reads the stored value.
+    const fresh = crypto.randomBytes(32).toString('hex');
+    await query(
+      `INSERT INTO app_secrets (key, value) VALUES ('vault_key', $1)
+       ON CONFLICT (key) DO NOTHING`,
+      [fresh],
+    );
+    const stored = await query<{ value: string }>(
+      `SELECT value FROM app_secrets WHERE key = 'vault_key'`,
+    );
+    KEY = parseKey(stored.rows[0].value, 'app_secrets');
+    return;
+  } catch (err) {
+    if (IS_PROD) {
+      throw new Error(
+        'Could not load or create the vault key in the database (app_secrets). ' +
+          'Ensure migrations have run, or set a stable VAULT_KEY env var. Cause: ' +
+          (err as Error).message,
+      );
+    }
+    // Development fallback: a local file.
+    KEY = loadKeyFromFileDev();
+  }
+}
 
 function tryDecrypt(blob: string, key: Buffer): string | null {
   try {
@@ -77,7 +125,7 @@ function tryDecrypt(blob: string, key: Buffer): string | null {
  */
 export function selectKeyFor(sampleBlob: string | null | undefined): boolean {
   if (!sampleBlob) return false;
-  const cands: Buffer[] = [KEY];
+  const cands: Buffer[] = KEY ? [KEY] : [];
   if (process.env.VAULT_KEY) {
     try {
       cands.push(Buffer.from(process.env.VAULT_KEY, 'hex'));
@@ -102,7 +150,7 @@ export function selectKeyFor(sampleBlob: string | null | undefined): boolean {
 /** Encrypt a string → "iv:tag:ciphertext" (base64). Backend only. */
 export function encrypt(plain: string): string {
   const iv = crypto.randomBytes(12);
-  const c = crypto.createCipheriv('aes-256-gcm', KEY, iv);
+  const c = crypto.createCipheriv('aes-256-gcm', currentKey(), iv);
   const ct = Buffer.concat([c.update(String(plain), 'utf8'), c.final()]);
   return [iv.toString('base64'), c.getAuthTag().toString('base64'), ct.toString('base64')].join(':');
 }
@@ -110,12 +158,12 @@ export function encrypt(plain: string): string {
 /** Decrypt "iv:tag:ciphertext" back to the original. null if wrong/tampered. */
 export function decrypt(blob: string | null | undefined): string | null {
   if (!blob) return null;
-  return tryDecrypt(blob, KEY);
+  return tryDecrypt(blob, currentKey());
 }
 
 /** Deterministic keyed hash of an email, for O(1) login lookup. */
 export function hashEmail(email: string): string {
-  return crypto.createHmac('sha256', KEY).update(String(email).trim().toLowerCase()).digest('hex');
+  return crypto.createHmac('sha256', currentKey()).update(String(email).trim().toLowerCase()).digest('hex');
 }
 
 /** What students may see: first letter + domain only. */

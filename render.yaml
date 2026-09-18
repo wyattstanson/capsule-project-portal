@@ -48,7 +48,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: VAULT_KEY
-        sync: false # ← 64 hex chars (32-byte AES key for email encryption). MUST stay stable across deploys, or encrypted emails become unreadable. Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+        sync: false # ← OPTIONAL. 64 hex chars (32-byte AES key for email encryption). If left unset, the API generates one on first boot and persists it in the DB (app_secrets) so it stays stable across deploys. Set it only to manage the secret yourself; if you do, it MUST stay stable. Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
       - key: PG_POOL_MAX
         value: "10"
       - key: WEB_ORIGIN

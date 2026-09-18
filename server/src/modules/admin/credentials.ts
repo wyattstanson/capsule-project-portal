@@ -75,7 +75,15 @@ function csvCell(v: string): string {
 export async function buildCredentialsCsv(): Promise<string> {
   const rows = await buildCredentialRows();
   const header = ['role', 'login_id', 'name', 'email', 'credential', 'status'];
-  const lines = [header.join(',')];
+  const lines = [
+    // Preamble (comment lines) records when this export was produced. Most CSV
+    // readers ignore leading '#' lines; spreadsheets show them as text.
+    '# Capstone Portal - sign-in credentials export',
+    `# Generated at: ${new Date().toISOString()}`,
+    `# Accounts: ${rows.length}`,
+    '# WARNING: contains sign-in credentials. Keep the repository private.',
+    header.join(','),
+  ];
   for (const r of rows) {
     lines.push([r.role, r.loginId, r.name, r.email, r.credential, r.status].map(csvCell).join(','));
   }

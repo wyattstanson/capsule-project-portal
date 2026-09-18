@@ -1,8 +1,11 @@
 import { buildApp } from './app.js';
 import { config } from './config.js';
 import { closePool } from './db/pool.js';
+import { initVault } from './lib/vault.js';
 
 async function main() {
+  // Load (or first-boot generate + persist) the encryption key before serving.
+  await initVault();
   const app = await buildApp();
   await app.listen({ port: config.apiPort, host: '0.0.0.0' });
   app.log.info(`Capsule API listening on :${config.apiPort}`);
