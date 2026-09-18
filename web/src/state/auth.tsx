@@ -35,6 +35,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       '/auth/login',
       { body: { identifier, password } },
     );
+    // A well-formed success always carries a token+principal. If it doesn't, the
+    // request reached something other than the API (e.g. the static site's own
+    // origin because VITE_API_URL isn't set, or the API is still waking up).
+    if (!r || !r.token || !r.principal) {
+      throw new Error(
+        'Signed in but no session came back. The API may be starting up, or the site’s API URL is misconfigured. Try again in a moment.',
+      );
+    }
     setToken(r.token);
     setPrincipal(r.principal);
     setMustSet(!!r.mustSetPassword);
