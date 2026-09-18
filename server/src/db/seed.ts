@@ -58,10 +58,12 @@ async function seed() {
     ];
     for (const s of staff) {
       await client.query(
-        `INSERT INTO staff (name, email_enc, email_hash, username, password_hash, role)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO staff (name, email_enc, email_hash, username, password_hash, role, cred_issued_enc)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          ON CONFLICT (email_hash) DO NOTHING`,
-        [s.name, encrypt(s.email), hashEmail(s.email), s.username, hashPasswordSync(s.pw), s.role],
+        // cred_issued_enc keeps the initial password (AES) so it can be exported
+        // in the credentials CSV until the staff member changes it themselves.
+        [s.name, encrypt(s.email), hashEmail(s.email), s.username, hashPasswordSync(s.pw), s.role, encrypt(s.pw)],
       );
     }
 

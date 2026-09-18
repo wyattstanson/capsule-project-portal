@@ -51,7 +51,7 @@ export function RequestBlade({
           {loading ? (
             <Spinner />
           ) : incoming.length === 0 ? (
-            <EmptyState icon="✉" title="No pending requests">
+            <EmptyState title="No pending requests">
               When a teammate invites you, it appears here in real time.
             </EmptyState>
           ) : (
@@ -61,7 +61,7 @@ export function RequestBlade({
                 <div className="list__meta mono">{r.from_reg_no}</div>
                 {r.recipient_teamed && (
                   <div className="request-card__warn">
-                    ⚠ You’re already in a team. Accepting isn’t possible — decline this to keep things clean.
+                    You’re already in a team, so accepting isn’t possible. Decline this to keep things clean.
                   </div>
                 )}
                 <div className="row" style={{ marginTop: 12 }}>

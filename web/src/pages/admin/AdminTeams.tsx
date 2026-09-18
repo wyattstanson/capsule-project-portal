@@ -67,9 +67,9 @@ export function AdminTeams() {
                 <tr key={t.id}>
                   <td>{t.title ?? <span className="list__meta">Untitled</span>}{t.is_solo && ' · solo'}</td>
                   <td>{t.route === 'cdc' ? 'CDC' : 'In-house'}</td>
-                  <td>{(t.members ?? []).map((m) => m.name).join(', ') || '—'}</td>
+                  <td>{(t.members ?? []).map((m) => m.name).join(', ') || '-'}</td>
                   <td><Pill status={t.status} /></td>
-                  <td className="mono">{t.project_id ?? '—'}</td>
+                  <td className="mono">{t.project_id ?? '-'}</td>
                   {isAdmin && (
                     <td>
                       <button className="btn btn--danger btn--sm" disabled={busy === t.id} onClick={() => cancel(t.id)}>Cancel</button>

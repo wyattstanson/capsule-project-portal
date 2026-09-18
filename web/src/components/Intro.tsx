@@ -53,7 +53,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
       className={`intro-splash${leaving ? ' leaving' : ''}`}
       onClick={skip}
       role="img"
-      aria-label="Capsule Portal"
+      aria-label="Capstone Portal"
     >
       <div className="intro-aurora" />
       <div className="intro-wrap">
@@ -69,7 +69,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
           <circle className="intro-cee" cx="48" cy="48" r="6" fill="#fff" />
         </svg>
         <div className="intro-brand">
-          Capsule <b>Portal</b>
+          Capstone <b>Portal</b>
         </div>
         <div className="intro-tag">7th-semester capstone · team formation &amp; approval</div>
         <div className="intro-rule" />

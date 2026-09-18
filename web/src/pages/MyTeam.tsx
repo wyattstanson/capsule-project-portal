@@ -136,7 +136,7 @@ export function MyTeam() {
             <div className="panel">
               <div className="panel__title">Pending invites</div>
               {pendingOut.length === 0 ? (
-                <EmptyState icon="✉" title="No pending invites">Invite peers from Browse Students.</EmptyState>
+                <EmptyState title="No pending invites">Invite peers from Browse Students.</EmptyState>
               ) : (
                 <div className="stack" style={{ gap: 8 }}>
                   {pendingOut.map((r) => (

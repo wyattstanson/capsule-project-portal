@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
 import { ThemeToggle } from '../components/ui';
+import { IconCheck } from '../components/icons';
 
-// Same rule as the API: letters, digits, _ and @ only; 6–24 chars.
+// Same rule as the API: letters, digits, _ and @ only; 6-24 chars.
 const PW_RE = /^[A-Za-z0-9_@]{6,24}$/;
 const CHARSET_RE = /^[A-Za-z0-9_@]*$/;
 
@@ -25,7 +26,7 @@ export function SetPassword() {
     setBusy(true);
     try {
       await setPassword(pw);
-      toast('Password set — you’re in', 'success');
+      toast('Password set, you’re in', 'success');
     } catch (err) {
       toast((err as Error).message, 'error');
     } finally {
@@ -35,7 +36,13 @@ export function SetPassword() {
 
   const Req = ({ ok, children }: { ok: boolean; children: React.ReactNode }) => (
     <div className={`req${ok ? ' ok' : ''}`}>
-      <span className="rd">{ok ? '✓' : '○'}</span>
+      <span className="rd" aria-hidden>
+        {ok ? (
+          <IconCheck width={14} height={14} />
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="7" /></svg>
+        )}
+      </span>
       <span>{children}</span>
     </div>
   );
@@ -48,7 +55,7 @@ export function SetPassword() {
         <h1 style={{ fontSize: 46 }}>Set your password.</h1>
         <p>
           Welcome, {principal?.name?.split(' ')[0]}. Your 16-character hashkey works only once. Set a
-          password now — you’ll use it from here on.
+          password now, and you’ll use it from here on.
         </p>
       </section>
       <section className="login-panel">
@@ -58,7 +65,7 @@ export function SetPassword() {
           <form onSubmit={submit} className="stack">
             <div className="field">
               <label htmlFor="np">New password</label>
-              <input id="np" className="input" type="password" autoFocus value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6–24 characters" />
+              <input id="np" className="input" type="password" autoFocus value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6 to 24 characters" />
             </div>
             <div className="field">
               <label htmlFor="np2">Confirm password</label>

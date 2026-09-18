@@ -26,7 +26,7 @@ function bannerCopy(team: Team | null): { title: string; sub: string } {
     case 'submitted':
       return { title: 'Submitted for review', sub: 'A coordinator will approve or return it with a remark.' };
     case 'approved':
-      return { title: `Approved — ${team.projectId}`, sub: 'Your project ID has been issued.' };
+      return { title: `Approved · ${team.projectId}`, sub: 'Your project ID has been issued.' };
     case 'rejected':
       return { title: 'Returned for changes', sub: 'Check the coordinator’s remark and resubmit.' };
     default:
@@ -64,7 +64,7 @@ export function StudentDashboard() {
     <div className="stack">
       <div className="page-head animate-in" style={{ animationDelay: '0.02s' }}>
         <h1>Welcome, {principal?.name?.split(' ')[0]}</h1>
-        <p>Here’s where your Capsule project stands.</p>
+        <p>Here’s where your Capstone project stands.</p>
       </div>
 
       {/* Wide status banner — the distinct hero treatment */}

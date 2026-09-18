@@ -58,7 +58,7 @@ export function BrowseStudents() {
     <div className="stack">
       <div className="page-head">
         <h1>Browse students</h1>
-        <p>Any un-teamed student — across any school or branch — can be invited.</p>
+        <p>Any un-teamed student, across any school or branch, can be invited.</p>
       </div>
 
       <div className="list">
@@ -85,9 +85,9 @@ export function BrowseStudents() {
         {list.loading ? (
           <div style={{ padding: 32, textAlign: 'center' }}><Spinner /></div>
         ) : list.error ? (
-          <EmptyState icon="⚠" title="Couldn’t load students">{list.error}</EmptyState>
+          <EmptyState title="Couldn’t load students">{list.error}</EmptyState>
         ) : list.data && list.data.students.length === 0 ? (
-          <EmptyState icon="🔎" title="No matches">Try clearing filters or a different search.</EmptyState>
+          <EmptyState title="No matches">Try clearing filters or a different search.</EmptyState>
         ) : (
           list.data?.students.map((s) => (
             <div key={s.id} className="list__row">

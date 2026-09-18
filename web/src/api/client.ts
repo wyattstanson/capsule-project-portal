@@ -20,6 +20,32 @@ export function setToken(token: string | null): void {
   }
 }
 
+/** Download a file from an authenticated endpoint and save it in the browser. */
+export async function apiDownload(path: string, filename: string): Promise<void> {
+  const token = getToken();
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/api${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch {
+    throw new Error('Can’t reach the server. Check your connection and try again.');
+  }
+  if (!res.ok) {
+    if (res.status === 401) setToken(null);
+    throw new Error(`Download failed (${res.status})`);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -50,19 +76,44 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
     body = JSON.stringify(opts.body);
   }
 
-  const res = await fetch(`${API_BASE}/api${path}`, {
-    method: opts.method ?? (body ? 'POST' : 'GET'),
-    headers,
-    body,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/api${path}`, {
+      method: opts.method ?? (body ? 'POST' : 'GET'),
+      headers,
+      body,
+    });
+  } catch {
+    // fetch() only rejects on network-level failure (server unreachable, DNS,
+    // CORS, offline) — never on an HTTP error status.
+    throw new ApiError(0, 'network', 'Can’t reach the server. Check your connection and try again.');
+  }
 
   if (res.status === 204) return undefined as T;
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+
+  // Parse defensively: an unreachable API, a proxy error page, or a misconfigured
+  // API URL returns HTML, not JSON. Blindly JSON.parse-ing that throws the cryptic
+  // "Unexpected token '<' … is not valid JSON" — surface a real message instead.
+  let data: unknown = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      if (res.status === 401) setToken(null);
+      throw new ApiError(
+        res.status || 502,
+        'bad_response',
+        res.ok
+          ? 'The server sent an unexpected response. Is the API URL configured correctly?'
+          : `Server error (${res.status}). The API may be starting up or unreachable — try again in a moment.`,
+      );
+    }
+  }
 
   if (!res.ok) {
-    const err = data?.error ?? {};
+    const err = (data as { error?: { code?: string; message?: string; details?: unknown } })?.error ?? {};
     if (res.status === 401) setToken(null);
     throw new ApiError(res.status, err.code ?? 'error', err.message ?? 'Request failed', err.details);
   }

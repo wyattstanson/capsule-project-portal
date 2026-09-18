@@ -23,7 +23,7 @@ export function CoordinatorQueue() {
         body: { submissionId: id, decision, remark: remarks[id] ?? '' },
       });
       toast(
-        decision === 'approve' ? `Approved — ${r.projectId}` : 'Returned to student with remark',
+        decision === 'approve' ? `Approved, ${r.projectId}` : 'Returned to student with remark',
         decision === 'approve' ? 'success' : 'info',
       );
       q.reload();
@@ -53,7 +53,7 @@ export function CoordinatorQueue() {
       </div>
 
       {subs.length === 0 ? (
-        <EmptyState icon="☑" title={`No ${tab} submissions`}>
+        <EmptyState title={`No ${tab} submissions`}>
           {tab === 'pending' ? 'The queue is clear.' : `Nothing ${tab} yet.`}
         </EmptyState>
       ) : (

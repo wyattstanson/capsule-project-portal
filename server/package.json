@@ -12,6 +12,7 @@
     "start:worker": "node dist/worker.js",
     "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/db/seed.ts",
+    "export:creds": "tsx src/db/export-credentials.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

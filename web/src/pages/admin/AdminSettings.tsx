@@ -69,7 +69,7 @@ export function AdminSettings() {
     <div className="stack">
       <div className="page-head">
         <h1>Deadlines & rules</h1>
-        <p>These drive the whole flow and change every semester — stored as data, never hardcoded.</p>
+        <p>These drive the whole flow and change every semester, stored as data, never hardcoded.</p>
       </div>
 
       <div className="panel">

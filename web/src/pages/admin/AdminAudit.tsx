@@ -21,11 +21,11 @@ export function AdminAudit() {
     <div className="stack">
       <div className="page-head">
         <h1>Audit log</h1>
-        <p>Every approve, reject, cancel and override — most recent first.</p>
+        <p>Every approve, reject, cancel and override, most recent first.</p>
       </div>
 
       {entries.length === 0 ? (
-        <EmptyState icon="❋" title="No activity yet">Actions will be recorded here.</EmptyState>
+        <EmptyState title="No activity yet">Actions will be recorded here.</EmptyState>
       ) : (
         <div className="table-wrap">
           <table className="data">

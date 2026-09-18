@@ -143,7 +143,7 @@ export function Submissions() {
       <div className="panel">
         <div className="panel__title">Review history</div>
         {history.length === 0 ? (
-          <EmptyState icon="☑" title="No submissions yet">Your submissions and coordinator remarks appear here.</EmptyState>
+          <EmptyState title="No submissions yet">Your submissions and coordinator remarks appear here.</EmptyState>
         ) : (
           <div className="table-wrap">
             <table className="data">
@@ -156,7 +156,7 @@ export function Submissions() {
                     <td>{new Date(s.created_at).toLocaleString()}</td>
                     <td>{s.reviewer_role === 'cdc_coordinator' ? 'CDC' : 'In-house'}</td>
                     <td><Pill status={s.status} /></td>
-                    <td>{s.reviewer_remark || <span className="list__meta">—</span>}</td>
+                    <td>{s.reviewer_remark || <span className="list__meta">-</span>}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1,12 +1,25 @@
 import { useState } from 'react';
-import { api } from '../../api/client';
+import { api, apiDownload } from '../../api/client';
 import { useToast } from '../../state/toast';
 
 export function AdminRoster() {
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [dl, setDl] = useState(false);
   const [result, setResult] = useState<{ inserted: number; updated: number; parsed: number } | null>(null);
+
+  const downloadCreds = async () => {
+    setDl(true);
+    try {
+      await apiDownload('/admin/credentials.csv', 'capstone-credentials.csv');
+      toast('Credentials CSV downloaded', 'success');
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    } finally {
+      setDl(false);
+    }
+  };
 
   const importCsv = async () => {
     if (!file) return;
@@ -50,6 +63,19 @@ export function AdminRoster() {
             Parsed {result.parsed} rows · <b>{result.inserted}</b> inserted · <b>{result.updated}</b> updated.
           </div>
         )}
+      </div>
+
+      <div className="panel">
+        <div className="panel__title">Credentials export</div>
+        <p className="panel__hint">
+          Live CSV of every sign-in credential: students’ one-time hashkeys, and staff initial
+          passwords. It regenerates on each download, so key resets and password changes are always
+          reflected. Accounts that have set their own password show <span className="mono">self-set</span> (their
+          password is hashed and can’t be recovered).
+        </p>
+        <button className="btn btn--secondary" disabled={dl} onClick={downloadCreds}>
+          {dl ? 'Preparing…' : 'Download credentials CSV'}
+        </button>
       </div>
     </div>
   );

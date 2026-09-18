@@ -114,7 +114,13 @@ export async function registerAuth(app: FastifyInstance): Promise<void> {
     }
     if (currentPassword === newPassword) throw badRequest('same_password', 'Choose a different password');
     const next = await hashPassword(newPassword);
-    await query(`UPDATE ${table} SET password_hash = $2 WHERE id = $1`, [p.sub, next]);
+    // Record that the account now uses a self-chosen (unrecoverable) password so
+    // the credentials export reports it accurately instead of the issued one.
+    if (p.kind === 'staff') {
+      await query(`UPDATE staff SET password_hash = $2, pw_self_set = true WHERE id = $1`, [p.sub, next]);
+    } else {
+      await query(`UPDATE students SET password_hash = $2, key_used = true WHERE id = $1`, [p.sub, next]);
+    }
     return { ok: true };
   });
 

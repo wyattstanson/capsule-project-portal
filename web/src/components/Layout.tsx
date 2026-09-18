@@ -110,7 +110,7 @@ export function Layout() {
 
   // Per-route document title (tell #5: real page titles).
   useEffect(() => {
-    document.title = `${crumb} · Capsule Portal`;
+    document.title = `${crumb} · Capstone Portal`;
   }, [crumb]);
 
   // Close the mobile drawer whenever the route changes.
@@ -128,7 +128,7 @@ export function Layout() {
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
           <Brandmark size={32} />
-          <span>Capsule Portal</span>
+          <span>Capstone Portal</span>
         </a>
         <div className="rail__nav">
           {sections.map((s) => (
@@ -144,7 +144,7 @@ export function Layout() {
           ))}
         </div>
         <div className="rail__spacer" />
-        <div className="rail__foot">7th-Sem Capsule Project · {new Date().getFullYear()}</div>
+        <div className="rail__foot">7th-Sem Capstone Project · {new Date().getFullYear()}</div>
       </nav>
 
       <div className="main">
@@ -182,7 +182,7 @@ export function Layout() {
         </header>
 
         <div className="breadcrumb">
-          <span>Capsule Portal</span>
+          <span>Capstone Portal</span>
           <IconChevron width={14} height={14} className="sep" />
           <b>{crumb}</b>
         </div>

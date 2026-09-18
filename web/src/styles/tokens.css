@@ -100,7 +100,16 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition: background 0.3s, color 0.3s;
+}
+
+/* While a theme swap is in flight, kill every transition so the recolor is
+   instant instead of animating each surface over its own duration. */
+.theme-instant,
+.theme-instant *,
+.theme-instant *::before,
+.theme-instant *::after {
+  transition: none !important;
+  animation: none !important;
 }
 
 h1, h2, h3, h4, p { margin: 0; }

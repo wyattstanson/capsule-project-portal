@@ -15,11 +15,40 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const KEY_FILE = path.join(process.cwd(), 'data', '.vault_key');
+const IS_PROD = process.env.NODE_ENV === 'production';
 
+function parseKey(hex: string, source: string): Buffer {
+  const buf = Buffer.from(hex.trim(), 'hex');
+  if (buf.length !== 32) {
+    throw new Error(
+      `VAULT_KEY from ${source} must be 32 bytes (64 hex chars); got ${buf.length} bytes. ` +
+        'Generate one with:  node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"',
+    );
+  }
+  return buf;
+}
+
+// The AES/HMAC key MUST be stable for the life of the data — if it changes,
+// every encrypted email and email_hash becomes unreadable and login lookups
+// break. In production we therefore REQUIRE an explicit VAULT_KEY env var and
+// refuse to boot without it, rather than silently generating a fresh (and, on
+// an ephemeral filesystem like Render's, per-restart) key that would corrupt
+// access to existing data. In development we fall back to a persisted file.
 function loadKey(): Buffer {
-  if (process.env.VAULT_KEY) return Buffer.from(process.env.VAULT_KEY, 'hex');
+  if (process.env.VAULT_KEY) return parseKey(process.env.VAULT_KEY, 'env');
+
+  if (IS_PROD) {
+    throw new Error(
+      'VAULT_KEY environment variable is required in production and must stay ' +
+        'STABLE across deploys (it decrypts stored emails). Generate once with:\n' +
+        '  node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"\n' +
+        'then set it on the API service (e.g. Render → capsule-api → Environment).',
+    );
+  }
+
+  // Development only: read a persisted key, or generate and persist one.
   try {
-    return Buffer.from(fs.readFileSync(KEY_FILE, 'utf8').trim(), 'hex');
+    return parseKey(fs.readFileSync(KEY_FILE, 'utf8'), KEY_FILE);
   } catch {
     /* no file yet */
   }

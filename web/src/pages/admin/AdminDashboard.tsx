@@ -22,7 +22,7 @@ export function AdminDashboard() {
     <div className="stack">
       <div className="page-head">
         <h1>Program dashboard</h1>
-        <p>Live participation across the 7th-semester Capsule Project.</p>
+        <p>Live participation across the 7th-semester Capstone Project.</p>
       </div>
 
       <div className="grid-3">

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Capsule / Portal</title>
+<title>Capstone / Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -339,9 +339,9 @@ function vLanding(){
     +'<span class="rar">→</span></button>';};
   return '<div class="fade landing">'
     +'<div>'
-      +'<span class="brand" data-home>CAPSULE<b>/7</b></span>'
+      +'<span class="brand" data-home>CAPSTONE<b>/7</b></span>'
       +'<div class="eyebrow" style="margin-top:26px">7th Semester · Capstone & CDC placement</div>'
-      +'<h1 class="hero-title">Ship your<br><span class="b">capsule.</span></h1>'
+      +'<h1 class="hero-title">Ship your<br><span class="b">capstone.</span></h1>'
       +'<p class="hero-sub">Form your team, take the CDC placement route, or go solo. Submit for coordinator approval and get an auto-generated project ID. One portal, three roles.</p>'
       +'<div class="hero-meta">'
         +'<div class="hmi">Teams<b>1–3</b></div>'
@@ -361,7 +361,7 @@ function vLanding(){
 /* ── Login ──────────────────────────────────────────────────────────── */
 function loginCopy(){
   if(S.role==='student') return {
-    eyebrow:'Student access', title:'Sign in to your capsule.',
+    eyebrow:'Student access', title:'Sign in to your capstone.',
     sub:'Use your registration number and the 16-character hashkey your coordinator issued. It works once — you’ll set a password immediately after.',
     points:[['◉','Build a team of up to three, or go solo'],['⚡','Real-time invites — no double-booking'],['☑','Your email stays private (encrypted, masked)']],
     idLabel:'Registration number', idPlace:'22BAI1002', idMono:true,
@@ -390,7 +390,7 @@ function vLogin(){
   var pts=c.points.map(function(p){return '<div class="point"><span class="i">'+p[0]+'</span><span>'+esc(p[1])+'</span></div>';}).join('');
   return '<div class="fade authgrid">'
     +'<div class="auth-left">'
-      +'<span class="brand" data-home>CAPSULE<b>/7</b></span>'
+      +'<span class="brand" data-home>CAPSTONE<b>/7</b></span>'
       +'<div class="eyebrow" style="margin-top:26px">'+esc(c.eyebrow)+'</div>'
       +'<h1>'+esc(c.title)+'</h1><p>'+esc(c.sub)+'</p>'
       +'<div class="points">'+pts+'</div>'
@@ -422,7 +422,7 @@ function vSetPw(){
   function req(ok,txt){return '<div class="req'+(ok?' ok':'')+'"><span class="rd">'+(ok?'✓':'○')+'</span>'+esc(txt)+'</div>';}
   return '<div class="fade authgrid">'
     +'<div class="auth-left">'
-      +'<span class="brand" data-home>CAPSULE<b>/7</b></span>'
+      +'<span class="brand" data-home>CAPSTONE<b>/7</b></span>'
       +'<div class="eyebrow" style="margin-top:26px">One-time key used</div>'
       +'<h1>Set your password.</h1>'
       +'<p>Welcome, '+esc(S.session.name.split(' ')[0])+'. Your 16-character hashkey works only once — it’s now spent. Choose a password you’ll use from here on.</p>'
@@ -459,7 +459,7 @@ function header(){
       +'<button data-view="member" class="'+(S.view==='member'?'on':'')+'">Member</button></div>'
     : '';
   return '<div class="head">'
-    +'<div class="logo" data-home>CAPSULE<b>'+brandTag+'</b></div>'
+    +'<div class="logo" data-home>CAPSTONE<b>'+brandTag+'</b></div>'
     +'<nav class="nav">'+links+'</nav><div class="grow"></div>'
     +seg
     +'<button class="iconbtn" data-theme-toggle title="Toggle theme">◑</button>'
@@ -590,7 +590,7 @@ function vAdminPlacement(){
   }).join('')||'<div class="empty">No placement-leave requests</div>';
   return '<div class="eyebrow" style="margin-top:24px">CDC · Special permission</div>'
     +'<h1 class="title">Placement leave</h1>'
-    +'<div class="note" style="margin:10px 0 0;max-width:640px">Students placed off-campus can request to leave their capsule. Approving releases them from the team — <b>even after the 7-day roster lock</b> — and frees the slot in the overview.</div>'
+    +'<div class="note" style="margin:10px 0 0;max-width:640px">Students placed off-campus can request to leave their capstone. Approving releases them from the team — <b>even after the 7-day roster lock</b> — and frees the slot in the overview.</div>'
     +'<div class="box" style="margin-top:20px"><div class="bh">Requests · '+pendingLeaves()+' pending</div>'+rows+'</div>';
 }
 function vAdminSimple(title,sub){

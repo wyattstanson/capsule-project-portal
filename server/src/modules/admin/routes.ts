@@ -14,6 +14,7 @@ import {
 } from '../../lib/settings.js';
 import { notifyStudent } from '../../lib/notify.js';
 import { writeAudit } from '../audit/service.js';
+import { buildCredentialsCsv } from './credentials.js';
 
 const deadlineSchema = z.object({
   key: z.string().trim().min(1),
@@ -191,6 +192,24 @@ export async function registerAdmin(app: FastifyInstance): Promise<void> {
       targetId: upd.rows[0].reg_no,
     });
     return { reg: upd.rows[0].reg_no, name: upd.rows[0].name, hashkey: key };
+  });
+
+  // ── Credentials export (live CSV of all sign-in credentials) ────────────
+  // Always generated fresh from the DB, so it reflects password changes and
+  // key resets the moment they happen. Admin-only; every export is audited.
+  app.get('/admin/credentials.csv', { preHandler: requireAdmin }, async (req, reply) => {
+    const csv = await buildCredentialsCsv();
+    await writeAudit({
+      actorId: req.principal!.sub,
+      actorKind: 'staff',
+      action: 'credentials.export',
+      targetType: 'credentials',
+    });
+    reply
+      .header('Content-Type', 'text/csv; charset=utf-8')
+      .header('Content-Disposition', 'attachment; filename="capstone-credentials.csv"')
+      .header('Cache-Control', 'no-store');
+    return csv;
   });
 
   // ── Team / request browser + override ──────────────────────────────────
