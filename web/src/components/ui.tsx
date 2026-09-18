@@ -1,4 +1,48 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { IconEye, IconEyeOff } from './icons';
+
+/** Password field with a show/hide (eye) toggle. */
+export function PasswordInput({
+  id,
+  value,
+  onChange,
+  placeholder,
+  autoFocus,
+  autoComplete = 'current-password',
+}: {
+  id?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  autoFocus?: boolean;
+  autoComplete?: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="pw-wrap">
+      <input
+        id={id}
+        className="input"
+        type={show ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        autoComplete={autoComplete}
+      />
+      <button
+        type="button"
+        className="pw-toggle"
+        onClick={() => setShow((s) => !s)}
+        aria-label={show ? 'Hide password' : 'Show password'}
+        title={show ? 'Hide password' : 'Show password'}
+        tabIndex={-1}
+      >
+        {show ? <IconEyeOff width={18} height={18} /> : <IconEye width={18} height={18} />}
+      </button>
+    </div>
+  );
+}
 
 export function cx(...parts: (string | false | undefined | null)[]): string {
   return parts.filter(Boolean).join(' ');

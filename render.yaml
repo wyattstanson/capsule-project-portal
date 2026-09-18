@@ -62,6 +62,10 @@ services:
         generateValue: true
       - key: PG_POOL_MAX
         value: "10"
+      # Demo students auto-seeded on boot (idempotent). Set to "0" to seed only
+      # staff/admin and import the real roster via the admin CSV upload instead.
+      - key: SEED_STUDENTS
+        value: "60"
       # VAULT_KEY is OPTIONAL — unset means the API generates one on first boot
       # and persists it in the DB (app_secrets), stable across deploys. Set it
       # (sync:false) only to manage the AES email key yourself; keep it stable.

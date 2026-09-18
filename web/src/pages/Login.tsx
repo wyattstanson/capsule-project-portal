@@ -2,7 +2,7 @@ import { useState, type ComponentType } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
-import { ThemeToggle } from '../components/ui';
+import { ThemeToggle, PasswordInput } from '../components/ui';
 import {
   IconTeam, IconReview, IconSettings, IconCheck, IconBell, IconAudit,
   IconBrowse, IconRoster, IconStar,
@@ -165,14 +165,12 @@ export function Login() {
             </div>
             <div className="field">
               <label htmlFor="password">{c.pwLabel}</label>
-              <input
+              <PasswordInput
                 id="password"
-                className="input"
-                type="password"
-                autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={setPassword}
                 placeholder={c.pwPlace}
+                autoComplete="current-password"
               />
             </div>
             <button className="btn btn--primary btn--block" disabled={busy || !identifier.trim() || !password}>

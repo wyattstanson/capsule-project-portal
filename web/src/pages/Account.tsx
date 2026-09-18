@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
 import { IconCheck } from '../components/icons';
+import { PasswordInput } from '../components/ui';
 
 // Same rule as the API: letters, digits, _ and @ only; 8-24 chars.
 const PW_RE = /^[A-Za-z0-9_@]{8,24}$/;
@@ -90,15 +91,15 @@ export function Account() {
           <form onSubmit={submit} className="stack">
             <div className="field">
               <label htmlFor="cur">Current password</label>
-              <input id="cur" className="input" type="password" autoComplete="current-password" value={cur} onChange={(e) => setCur(e.target.value)} placeholder="Your current password or hashkey" />
+              <PasswordInput id="cur" value={cur} onChange={setCur} placeholder="Your current password or hashkey" autoComplete="current-password" />
             </div>
             <div className="field">
               <label htmlFor="np">New password</label>
-              <input id="np" className="input" type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="8 to 24 characters" />
+              <PasswordInput id="np" value={pw} onChange={setPw} placeholder="8 to 24 characters" autoComplete="new-password" />
             </div>
             <div className="field">
               <label htmlFor="np2">Confirm new password</label>
-              <input id="np2" className="input" type="password" autoComplete="new-password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Repeat it" />
+              <PasswordInput id="np2" value={pw2} onChange={setPw2} placeholder="Repeat it" autoComplete="new-password" />
             </div>
             <div className="reqs">
               <Req ok={lenOk}>8 to 24 characters</Req>
