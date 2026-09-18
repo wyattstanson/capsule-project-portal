@@ -20,7 +20,7 @@ const COPY: Record<Role, {
   student: {
     eyebrow: 'Student access',
     title: 'Sign in to your capstone.',
-    sub: 'Use your registration number and the 16-character hashkey your coordinator issued. It works once, then you set a password straight after.',
+    sub: 'Use your registration number and the hashkey your proctor issued. It works once, then you set a password straight after.',
     points: [[IconTeam, 'Build a team of up to three, or go solo'], [IconBell, 'Real-time invites with no double-booking'], [IconCheck, 'Your email stays private (encrypted, masked)']],
     idLabel: 'Registration number', idPlace: '22BAI1002', idMono: true,
     pwLabel: 'Hashkey or password', pwPlace: '16-char hashkey, or your password',

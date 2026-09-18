@@ -219,8 +219,12 @@ export function newToken(): string {
 // credential (they change to a real password later). Crockford-ish alphabet
 // avoids ambiguous 0/O/1/I/L. Uppercase, easy to read off a sheet.
 const KEY_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-export function genHashkey(len = 16): string {
+export function genHashkey(len?: number): string {
+  // 16–26 characters (per spec) when no explicit length is given; alphanumeric,
+  // ambiguity-free (no 0/O/1/I/L). Length varies per key so keys aren't a fixed
+  // width an attacker could assume.
+  const n = len ?? 16 + crypto.randomInt(11); // 16..26 inclusive
   let out = '';
-  for (let i = 0; i < len; i++) out += KEY_ALPHABET[crypto.randomInt(KEY_ALPHABET.length)];
+  for (let i = 0; i < n; i++) out += KEY_ALPHABET[crypto.randomInt(KEY_ALPHABET.length)];
   return out;
 }

@@ -55,7 +55,7 @@ export function AdminTeams() {
       </div>
 
       {teams.length === 0 ? (
-        <EmptyState icon="⬡" title="No teams">Nothing matches this filter yet.</EmptyState>
+        <EmptyState title="No teams">Nothing matches this filter yet.</EmptyState>
       ) : (
         <div className="table-wrap">
           <table className="data">

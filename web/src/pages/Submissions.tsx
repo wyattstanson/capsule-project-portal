@@ -27,7 +27,7 @@ export function Submissions() {
     return (
       <div className="stack">
         <div className="page-head"><h1>Submissions</h1></div>
-        <EmptyState icon="⬡" title="No team yet">
+        <EmptyState title="No team yet">
           Confirm a team or go solo first. <Link to="/team">Go to My Team</Link>
         </EmptyState>
       </div>

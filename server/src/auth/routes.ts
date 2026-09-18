@@ -18,11 +18,11 @@ const loginSchema = z.object({
   identifier: z.string().trim().min(1), // reg no | email | admin username
   password: z.string().min(1),
 });
-// Passwords: letters, digits, _ and @ only; 6–24 chars.
-const PASSWORD_RE = /^[A-Za-z0-9_@]{6,24}$/;
+// Passwords: letters, digits, _ and @ only; 8–24 chars.
+const PASSWORD_RE = /^[A-Za-z0-9_@]{8,24}$/;
 const passwordField = z
   .string()
-  .regex(PASSWORD_RE, 'Password must be 6–24 characters: letters, numbers, _ or @ only');
+  .regex(PASSWORD_RE, 'Password must be 8–24 characters: letters, numbers, _ or @ only');
 const changeSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: passwordField,

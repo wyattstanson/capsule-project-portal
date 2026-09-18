@@ -4,8 +4,8 @@ import { useToast } from '../state/toast';
 import { ThemeToggle } from '../components/ui';
 import { IconCheck } from '../components/icons';
 
-// Same rule as the API: letters, digits, _ and @ only; 6-24 chars.
-const PW_RE = /^[A-Za-z0-9_@]{6,24}$/;
+// Same rule as the API: letters, digits, _ and @ only; 8-24 chars.
+const PW_RE = /^[A-Za-z0-9_@]{8,24}$/;
 const CHARSET_RE = /^[A-Za-z0-9_@]*$/;
 
 export function SetPassword() {
@@ -15,7 +15,7 @@ export function SetPassword() {
   const [pw2, setPw2] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const lenOk = pw.length >= 6 && pw.length <= 24;
+  const lenOk = pw.length >= 8 && pw.length <= 24;
   const charOk = CHARSET_RE.test(pw) && pw.length > 0;
   const matchOk = pw.length > 0 && pw === pw2;
   const valid = PW_RE.test(pw) && matchOk;
@@ -65,14 +65,14 @@ export function SetPassword() {
           <form onSubmit={submit} className="stack">
             <div className="field">
               <label htmlFor="np">New password</label>
-              <input id="np" className="input" type="password" autoFocus value={pw} onChange={(e) => setPw(e.target.value)} placeholder="6 to 24 characters" />
+              <input id="np" className="input" type="password" autoFocus value={pw} onChange={(e) => setPw(e.target.value)} placeholder="8 to 24 characters" />
             </div>
             <div className="field">
               <label htmlFor="np2">Confirm password</label>
               <input id="np2" className="input" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Repeat it" />
             </div>
             <div className="reqs">
-              <Req ok={lenOk}>6 to 24 characters</Req>
+              <Req ok={lenOk}>8 to 24 characters</Req>
               <Req ok={charOk}>Only letters, numbers, _ and @</Req>
               <Req ok={matchOk}>Both entries match</Req>
             </div>

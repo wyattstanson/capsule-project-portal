@@ -114,7 +114,7 @@ export function StudentDashboard() {
               ))}
             </div>
           ) : (
-            <EmptyState icon="⬡" title="No team yet">Invite peers or confirm solo to begin.</EmptyState>
+            <EmptyState title="No team yet">Invite peers or confirm solo to begin.</EmptyState>
           )}
         </div>
 
