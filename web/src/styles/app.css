@@ -50,6 +50,8 @@
 .iconbtn:hover { background: var(--surface-alt); }
 .badge-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); }
 .who { display: flex; align-items: center; gap: 9px; }
+.who__link { display: flex; align-items: center; gap: 9px; background: transparent; border: 1px solid transparent; border-radius: var(--r-md); padding: 4px 8px 4px 4px; cursor: pointer; color: inherit; font: inherit; transition: background 0.15s, border-color 0.15s; }
+.who__link:hover { background: var(--surface-alt); border-color: var(--line); }
 .who__avatar { width: 40px; height: 40px; border-radius: var(--r-md); background: var(--accent); color: #fff; display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
 .who__meta { line-height: 1.25; }
 .who__name { font-weight: 700; font-size: 13px; }

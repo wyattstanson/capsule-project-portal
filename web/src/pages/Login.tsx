@@ -1,4 +1,5 @@
 import { useState, type ComponentType } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
 import { ThemeToggle } from '../components/ui';
@@ -62,7 +63,12 @@ function Brand() {
 export function Login() {
   const { login } = useAuth();
   const toast = useToast();
-  const [role, setRole] = useState<Role | null>(null);
+  const navigate = useNavigate();
+  // Role comes from the URL (/ = chooser, /login/:role = form) so the browser
+  // Back button moves between them naturally.
+  const { role: roleParam } = useParams<{ role: string }>();
+  const role: Role | null =
+    roleParam === 'student' || roleParam === 'faculty' || roleParam === 'admin' ? roleParam : null;
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -102,7 +108,7 @@ export function Login() {
             <div className="rolelist">
               <div className="lead">Choose how you sign in</div>
               {ROLES.map(({ role: r, blue, Icon, title, desc }) => (
-                <button key={r} className={`role${blue ? ' blue' : ''}`} onClick={() => { setRole(r); setIdentifier(''); setPassword(''); }}>
+                <button key={r} className={`role${blue ? ' blue' : ''}`} onClick={() => navigate(`/login/${r}`)}>
                   <span className="rico"><Icon width={22} height={22} /></span>
                   <span>
                     <span className="rt" style={{ display: 'block' }}>{title}</span>
@@ -140,7 +146,7 @@ export function Login() {
 
       <section className="login-panel">
         <div className="login-card panel panel--raised">
-          <button className="back" onClick={() => setRole(null)}>&larr; All roles</button>
+          <button className="back" onClick={() => navigate('/')}>&larr; All roles</button>
           <h2>{role === 'student' ? 'Student sign in' : role === 'faculty' ? 'Faculty sign in' : 'Admin sign in'}</h2>
           <p className="panel__hint">{c.eyebrow} · Capstone / CDC portal</p>
           <form onSubmit={submit} className="stack">

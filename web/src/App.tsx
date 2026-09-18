@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import type { Role } from './api/types';
+import type { Principal, Role } from './api/types';
 import { useAuth } from './state/auth';
 import { NotificationsProvider } from './state/notifications';
 import { LoadingScreen } from './components/ui';
@@ -8,6 +8,7 @@ import { Intro } from './components/Intro';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { SetPassword } from './pages/SetPassword';
+import { Account } from './pages/Account';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { BrowseStudents } from './pages/BrowseStudents';
 import { MyTeam } from './pages/MyTeam';
@@ -28,23 +29,40 @@ const HOME: Record<Role, string> = {
 };
 
 export function App() {
-  const { principal, loading } = useAuth();
   const [introDone, setIntroDone] = useState(false);
   return (
     <>
       {!introDone && <Intro onDone={() => setIntroDone(true)} />}
-      <AppContent principal={principal} loading={loading} />
+      <AppContent />
     </>
   );
 }
 
-function AppContent({ principal, loading }: { principal: ReturnType<typeof useAuth>['principal']; loading: boolean }) {
-  const { mustSetPassword } = useAuth();
+function AppContent() {
+  const { principal, loading, mustSetPassword } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (!principal) return <Login />;
-  // First student login (one-time hashkey consumed) → gate on setting a password.
-  if (mustSetPassword) return <SetPassword />;
 
+  // A single Router wraps every state so navigation is always URL-driven and the
+  // browser Back/Forward buttons work — including the sign-in flow.
+  return (
+    <BrowserRouter>
+      {!principal ? (
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login/:role" element={<Login />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      ) : mustSetPassword ? (
+        // First student login (one-time hashkey consumed) → gate on a password.
+        <SetPassword />
+      ) : (
+        <AuthedRoutes principal={principal} />
+      )}
+    </BrowserRouter>
+  );
+}
+
+function AuthedRoutes({ principal }: { principal: Principal }) {
   const home = HOME[principal.role];
   const isStudent = principal.role === 'student';
   const isCoordinator = principal.role === 'project_coordinator' || principal.role === 'cdc_coordinator';
@@ -52,36 +70,36 @@ function AppContent({ principal, loading }: { principal: ReturnType<typeof useAu
   const isOversight = isAdmin || principal.role === 'proctor';
 
   return (
-    <BrowserRouter>
-      <NotificationsProvider>
-        <Routes>
-          <Route element={<Layout />}>
-            {isStudent && (
-              <>
-                <Route index element={<StudentDashboard />} />
-                <Route path="/team" element={<MyTeam />} />
-                <Route path="/browse" element={<BrowseStudents />} />
-                <Route path="/submissions" element={<Submissions />} />
-              </>
-            )}
-            {isCoordinator && <Route path="/review" element={<CoordinatorQueue />} />}
-            {isOversight && (
-              <>
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/teams" element={<AdminTeams />} />
-              </>
-            )}
-            {isAdmin && (
-              <>
-                <Route path="/admin/roster" element={<AdminRoster />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/audit" element={<AdminAudit />} />
-              </>
-            )}
-            <Route path="*" element={<Navigate to={home} replace />} />
-          </Route>
-        </Routes>
-      </NotificationsProvider>
-    </BrowserRouter>
+    <NotificationsProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          {isStudent && (
+            <>
+              <Route index element={<StudentDashboard />} />
+              <Route path="/team" element={<MyTeam />} />
+              <Route path="/browse" element={<BrowseStudents />} />
+              <Route path="/submissions" element={<Submissions />} />
+            </>
+          )}
+          {isCoordinator && <Route path="/review" element={<CoordinatorQueue />} />}
+          {isOversight && (
+            <>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/teams" element={<AdminTeams />} />
+            </>
+          )}
+          {isAdmin && (
+            <>
+              <Route path="/admin/roster" element={<AdminRoster />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/audit" element={<AdminAudit />} />
+            </>
+          )}
+          {/* Available to every signed-in role. */}
+          <Route path="/account" element={<Account />} />
+          <Route path="*" element={<Navigate to={home} replace />} />
+        </Route>
+      </Routes>
+    </NotificationsProvider>
   );
 }
