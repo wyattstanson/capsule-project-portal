@@ -24,6 +24,13 @@ async function seed() {
   await initVault(); // ensure the encryption key is loaded before encrypt()
   const client = await pool.connect();
   try {
+    // Idempotent + fast: if staff already exist, the DB is seeded — skip the
+    // whole thing (avoids re-hashing hundreds of students on every deploy).
+    const seeded = await client.query<{ n: number }>('SELECT count(*)::int AS n FROM staff');
+    if (seeded.rows[0].n > 0) {
+      console.log(`[seed] already seeded (${seeded.rows[0].n} staff) — skipping`);
+      return;
+    }
     await client.query('BEGIN');
 
     // ── Settings ──────────────────────────────────────────────────────────
