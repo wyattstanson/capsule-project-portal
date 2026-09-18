@@ -11,3 +11,4 @@ exports/
 .DS_Store
 web/dist/
 server/dist/
+server/public/

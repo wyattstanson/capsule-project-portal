@@ -1,17 +1,20 @@
-# ─── Render Blueprint — Capsule Portal (free-tier friendly) ─────────────────
+# ─── Render Blueprint — Capstone Portal (single service, free-tier friendly) ─
 # Deploy: push this repo to GitHub → Render → New → Blueprint → pick the repo.
-# After the FIRST deploy, set the two `sync: false` vars (each needs the other
-# service's URL, known only once they exist), then seed once (see bottom).
+# ONE web service (capsule-api) builds the React frontend AND the Fastify API
+# and serves both from the same origin, so there is nothing to wire up:
+#   • no VITE_API_URL — the frontend calls same-origin /api
+#   • no CORS / WEB_ORIGIN — it's all one origin
+#   • no stable VAULT_KEY needed — the API generates + persists one in the DB
+# After the first deploy, if the database is empty, seed it once from the
+# service Shell:  node dist/db/seed.js
 #
-# Free-tier constraints handled here:
-#   • No `preDeployCommand` on free plans → migrations run in the start command
-#     instead (idempotent: the runner checks schema_migrations).
-#   • `npm install --include=dev` so tsc/vite (devDeps) exist even though
-#     NODE_ENV=production would otherwise skip them.
-#   • The background worker needs a PAID plan, so it's omitted — it only does
-#     out-of-band notification dispatch + portal sync, and every core flow
-#     (auth, teams, submissions, approvals, SSE) works without it. To add it,
-#     see the commented block at the bottom.
+# Free-tier notes:
+#   • No preDeployCommand on free plans → migrations run in the start command
+#     (idempotent: the runner tracks schema_migrations).
+#   • `npm install --include=dev` so tsc/vite (devDeps) are available even with
+#     NODE_ENV=production.
+#   • The background worker needs a PAID plan, so it's omitted — every core flow
+#     (auth, teams, submissions, approvals, SSE) works without it.
 
 databases:
   - name: capsule-db
@@ -26,14 +29,22 @@ services:
     plan: free
     ipAllowList: [] # internal-only
 
-  # ─── API (Fastify) ───────────────────────────────────────────────────────
+  # ─── App: Fastify API + built React frontend, one origin ─────────────────
   - type: web
     name: capsule-api
     runtime: node
     plan: free
     rootDir: server
-    buildCommand: npm install --include=dev && npm run build
-    # Runs migrations (idempotent) then boots the server — no pre-deploy needed.
+    # Build the API, then build the web app and copy its dist into server/public
+    # so the API serves it at "/". Runs from server/ (rootDir).
+    buildCommand: >-
+      npm install --include=dev &&
+      npm run build &&
+      npm --prefix ../web install --include=dev &&
+      npm --prefix ../web run build &&
+      rm -rf public &&
+      cp -r ../web/dist public
+    # Migrations (idempotent) then boot; the server serves ./public if present.
     startCommand: npm run start:prod
     healthCheckPath: /health
     envVars:
@@ -47,31 +58,14 @@ services:
         fromService: { type: keyvalue, name: capsule-redis, property: connectionString }
       - key: JWT_SECRET
         generateValue: true
-      - key: VAULT_KEY
-        sync: false # ← OPTIONAL. 64 hex chars (32-byte AES key for email encryption). If left unset, the API generates one on first boot and persists it in the DB (app_secrets) so it stays stable across deploys. Set it only to manage the secret yourself; if you do, it MUST stay stable. Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
       - key: PG_POOL_MAX
         value: "10"
-      - key: WEB_ORIGIN
-        sync: false # ← set to the static site URL, e.g. https://capsule-web.onrender.com (CORS)
+      # VAULT_KEY is OPTIONAL — unset means the API generates one on first boot
+      # and persists it in the DB (app_secrets), stable across deploys. Set it
+      # (sync:false) only to manage the AES email key yourself; keep it stable.
+      - key: VAULT_KEY
+        sync: false
 
-  # ─── Frontend (Vite build, served as a static site) ──────────────────────
-  - type: web
-    name: capsule-web
-    runtime: static
-    rootDir: web
-    buildCommand: npm install --include=dev && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        sync: false # ← set to the API URL, e.g. https://capsule-api.onrender.com
-    routes:
-      - type: rewrite
-        source: /* # SPA fallback so client-side routes resolve
-        destination: /index.html
-
-# ─── Seed once, after the first successful deploy ───────────────────────────
-#   Render → capsule-api → Shell:   node dist/db/seed.js
-#
 # ─── Optional worker (needs a PAID plan; add under `services:` if you want it) ─
 #   - type: worker
 #     name: capsule-worker

@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
@@ -69,6 +69,30 @@ export async function buildApp(): Promise<FastifyInstance> {
     },
     { prefix: '/api' },
   );
+
+  // ── Serve the built frontend from the SAME origin, when present ──────────
+  // In production (single-service deploy) the web build is copied to
+  // server/public, so the API serves the SPA and its own /api routes from one
+  // URL — no separate static host, no VITE_API_URL, no CORS to configure. In
+  // local dev there's no public/ dir (the web runs via Vite), so this is
+  // skipped and nothing changes.
+  const webRoot = join(process.cwd(), 'public');
+  if (existsSync(join(webRoot, 'index.html'))) {
+    await app.register(fastifyStatic, {
+      root: webRoot,
+      prefix: '/',
+      wildcard: false, // real files are served; unmatched paths fall through
+    });
+    // SPA fallback: client-side routes (/team, /admin, …) return index.html,
+    // while unknown /api and /files paths keep a JSON 404.
+    app.setNotFoundHandler((req, reply) => {
+      if (req.method !== 'GET' || req.url.startsWith('/api') || req.url.startsWith('/files')) {
+        reply.status(404).send({ error: { code: 'not_found', message: 'Not found' } });
+        return;
+      }
+      reply.type('text/html').sendFile('index.html');
+    });
+  }
 
   return app;
 }
