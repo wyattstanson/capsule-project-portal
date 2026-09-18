@@ -1,5 +1,5 @@
 import pg from 'pg';
-import { config } from '../config.js';
+import { config, pgSsl } from '../config.js';
 
 const { Pool } = pg;
 
@@ -10,6 +10,7 @@ const { Pool } = pg;
 // team-confirmation flow relies on.
 export const pool = new Pool({
   connectionString: config.databaseUrl,
+  ssl: pgSsl(config.databaseUrl),
   max: config.pgPoolMax,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 10_000,

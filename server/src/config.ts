@@ -50,3 +50,15 @@ export const config = {
 
   webOrigin: process.env.WEB_ORIGIN ?? 'http://localhost:5173',
 } as const;
+
+// TLS for the Postgres connection. Managed providers (Supabase, Neon, RDS,
+// Render's external URL) require SSL; a local Docker Postgres does not. Auto-
+// detect from the host, with PG_SSL=true/false as an explicit override.
+export function pgSsl(url: string): { rejectUnauthorized: boolean } | undefined {
+  const flag = process.env.PG_SSL;
+  if (flag === 'true') return { rejectUnauthorized: false };
+  if (flag === 'false') return undefined;
+  return /supabase\.(co|com)|pooler\.supabase|neon\.tech|\.render\.com|amazonaws\.com|sslmode=require/.test(url)
+    ? { rejectUnauthorized: false } // managed certs; verification not required for our use
+    : undefined;
+}

@@ -5,6 +5,14 @@
 #   • no VITE_API_URL — the frontend calls same-origin /api
 #   • no CORS / WEB_ORIGIN — it's all one origin
 #   • no stable VAULT_KEY needed — the API generates + persists one in the DB
+# DATABASE: bring your own PERSISTENT Postgres (Supabase or Neon free tier —
+# data is kept forever, unlike Render's free DB which is deleted after ~30 days).
+# At blueprint apply, paste TWO connection strings when prompted:
+#   • DATABASE_URL        → the POOLED string (Supabase "Transaction"/port 6543,
+#                           or Neon's -pooler host). Used by the app.
+#   • DATABASE_DIRECT_URL → the DIRECT/non-pooled string (Supabase 5432, or Neon
+#                           without -pooler). Used by the migration runner.
+# SSL auto-enables for these hosts (see pgSsl in server/src/config.ts).
 # After the first deploy, if the database is empty, seed it once from the
 # service Shell:  node dist/db/seed.js
 #
@@ -15,12 +23,6 @@
 #     NODE_ENV=production.
 #   • The background worker needs a PAID plan, so it's omitted — every core flow
 #     (auth, teams, submissions, approvals, SSE) works without it.
-
-databases:
-  - name: capsule-db
-    plan: free
-    databaseName: capsule
-    user: capsule
 
 services:
   # ─── Redis (Render "Key Value") — cache, rate-limit, SSE pub/sub ──────────
@@ -51,9 +53,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase: { name: capsule-db, property: connectionString }
+        sync: false # ← Supabase/Neon POOLED connection string
       - key: DATABASE_DIRECT_URL
-        fromDatabase: { name: capsule-db, property: connectionString }
+        sync: false # ← Supabase/Neon DIRECT (non-pooled) connection string
       - key: REDIS_URL
         fromService: { type: keyvalue, name: capsule-redis, property: connectionString }
       - key: JWT_SECRET

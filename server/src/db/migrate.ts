@@ -2,7 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
-import { config } from '../config.js';
+import { config, pgSsl } from '../config.js';
 
 // Migrations run against the DIRECT connection (bypassing pgbouncer) because
 // DDL and advisory locks require a stable session, which transaction-pooling
@@ -12,7 +12,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_DIR = join(__dirname, 'migrations');
 
 async function main() {
-  const client = new Client({ connectionString: config.databaseDirectUrl });
+  const client = new Client({
+    connectionString: config.databaseDirectUrl,
+    ssl: pgSsl(config.databaseDirectUrl),
+  });
   await client.connect();
   try {
     // Serialise concurrent migrators with a session advisory lock.
